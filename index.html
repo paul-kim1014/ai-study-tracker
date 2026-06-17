@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 대학원 준비 트래커 🎓</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --surface: #1e293b;
+    --surface2: #273449;
+    --border: #334155;
+    --text: #f1f5f9;
+    --text-muted: #94a3b8;
+    --accent: #6366f1;
+    --accent2: #8b5cf6;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --p1: #10b981;
+    --p2: #3b82f6;
+    --p3: #f59e0b;
+    --p4: #ef4444;
+    --p5: #8b5cf6;
+    --p6: #ec4899;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'Malgun Gothic', '맑은 고딕', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #1e293b 100%);
+    padding: 20px 24px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .app-title { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+  .app-sub { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .stat-chip {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .stat-chip .val { font-weight: 700; font-size: 15px; }
+  .stat-chip .lbl { color: var(--text-muted); font-size: 11px; }
+
+  /* XP Bar */
+  .xp-section { padding: 12px 0 0; }
+  .xp-bar-bg {
+    height: 8px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .xp-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+  .xp-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+    padding-bottom: 14px;
+  }
+
+  /* Nav */
+  .nav {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-btn {
+    flex: 1;
+    padding: 12px 8px;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+  }
+  .nav-btn.active {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Pages */
+  .page { display: none; padding: 20px 16px; max-width: 680px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* Today */
+  .today-date { font-size: 13px; color: var(--text-muted); margin-bottom: 4px; }
+  .today-phase {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-size: 16px;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .task-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 10px;
+    transition: all 0.2s;
+  }
+  .task-card.done {
+    background: rgba(16,185,129,0.08);
+    border-color: rgba(16,185,129,0.3);
+  }
+  .task-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .task-check {
+    width: 22px;
+    height: 22px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+  .task-card.done .task-check {
+    background: var(--success);
+    border-color: var(--success);
+  }
+  .task-check::after {
+    content: '';
+    display: none;
+    width: 6px;
+    height: 10px;
+    border: 2px solid white;
+    border-top: none;
+    border-left: none;
+    transform: rotate(45deg) translate(-1px, -1px);
+  }
+  .task-card.done .task-check::after { display: block; }
+  .task-text { font-size: 14px; line-height: 1.5; }
+  .task-card.done .task-text { color: var(--text-muted); text-decoration: line-through; }
+  .task-xp {
+    margin-left: auto;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent);
+    flex-shrink: 0;
+    padding: 2px 8px;
+    background: rgba(99,102,241,0.15);
+    border-radius: 10px;
+  }
+
+  .no-tasks {
+    text-align: center;
+    padding: 40px;
+    color: var(--text-muted);
+  }
+
+  /* Completed message */
+  .all-done {
+    background: linear-gradient(135deg, rgba(16,185,129,0.15), rgba(99,102,241,0.15));
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+  .all-done .icon { font-size: 40px; margin-bottom: 8px; }
+  .all-done h3 { font-size: 18px; margin-bottom: 4px; }
+  .all-done p { font-size: 13px; color: var(--text-muted); }
+
+  /* Brick Wall */
+  .brick-section { margin-top: 24px; }
+  .brick-wall {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: flex-start;
+    gap: 4px;
+    padding: 16px 16px 20px;
+    background: linear-gradient(180deg, var(--surface) 0%, #1a2538 100%);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    min-height: 90px;
+    overflow: hidden;
+    position: relative;
+  }
+  .brick-wall::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 8px;
+    background: #0f172a;
+    border-radius: 0 0 12px 12px;
+  }
+  .brick-row { display: flex; gap: 4px; }
+  .brick-row.offset { margin-left: 12px; }
+  .brick {
+    width: 22px;
+    height: 13px;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+    opacity: 0;
+    transform: translateY(6px) scale(0.8);
+    transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .brick.placed { opacity: 1; transform: translateY(0) scale(1); }
+  .brick-empty {
+    font-size: 12px;
+    color: var(--text-muted);
+    text-align: center;
+    width: 100%;
+    padding: 8px 0;
+  }
+  .brick-count { font-size: 12px; color: var(--text-muted); margin-top: 8px; text-align: right; }
+
+  /* Curriculum day task expand */
+  .phase-day-item { cursor: pointer; }
+  .phase-day-item:hover { background: rgba(255,255,255,0.03); }
+  .day-expand-icon { font-size: 11px; color: var(--text-muted); flex-shrink:0; transition: transform 0.2s; }
+  .day-expand-icon.open { transform: rotate(180deg); }
+  .day-tasks {
+    display: none;
+    padding: 4px 16px 12px 54px;
+    background: rgba(0,0,0,0.2);
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  .day-tasks.open { display: block; }
+  .day-task-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 9px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+  }
+  .day-task-row:last-child { border-bottom: none; }
+  .day-task-row:hover { opacity: 0.85; }
+  .day-task-check {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 5px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    margin-top: 1px;
+  }
+  .day-task-check.checked { background: var(--success); border-color: var(--success); }
+  .day-task-check.checked::after {
+    content: '';
+    width: 5px; height: 9px;
+    border: 2px solid white;
+    border-top: none; border-left: none;
+    transform: rotate(45deg) translate(-1px,-1px);
+    display: block;
+  }
+  .day-task-text { font-size: 12px; line-height: 1.6; color: var(--text-muted); flex: 1; }
+  .day-task-text.checked { text-decoration: line-through; opacity: 0.5; }
+  .day-task-xp { font-size: 10px; font-weight: 700; color: var(--accent); flex-shrink: 0; padding: 2px 6px; background: rgba(99,102,241,0.12); border-radius: 8px; }
+
+  /* Calendar */
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-top: 12px;
+  }
+  .cal-header {
+    text-align: center;
+    font-size: 10px;
+    color: var(--text-muted);
+    padding: 4px 0;
+    font-weight: 700;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    border: 1px solid transparent;
+    cursor: default;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .cal-day.empty { background: none; }
+  .cal-day.future { background: var(--surface); color: var(--text-muted); }
+  .cal-day.today { border-color: var(--accent); background: rgba(99,102,241,0.15); font-weight: 700; }
+  .cal-day.done { background: var(--success); color: white; }
+  .cal-day.partial { background: var(--warning); color: #1a1a1a; }
+  .cal-day.skipped { background: var(--surface2); color: var(--text-muted); }
+  .cal-day .day-num { font-weight: 700; font-size: 11px; }
+  .cal-day .day-dot { width: 4px; height: 4px; border-radius: 50%; background: white; margin-top: 1px; opacity: 0.7; }
+
+  .month-title {
+    font-size: 14px;
+    font-weight: 700;
+    margin: 16px 0 8px;
+    color: var(--text-muted);
+  }
+
+  /* Curriculum */
+  .phase-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+  }
+  .phase-emoji { font-size: 24px; }
+  .phase-info { flex: 1; }
+  .phase-name { font-size: 15px; font-weight: 700; }
+  .phase-date { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .phase-progress-bar {
+    height: 4px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .phase-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.5s;
+  }
+  .phase-pct { font-size: 12px; font-weight: 700; }
+  .phase-toggle { font-size: 12px; color: var(--text-muted); transition: transform 0.2s; }
+  .phase-toggle.open { transform: rotate(180deg); }
+
+  .phase-days {
+    display: none;
+    border-top: 1px solid var(--border);
+  }
+  .phase-days.open { display: block; }
+  .phase-day-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .phase-day-item:last-child { border-bottom: none; }
+  .day-num-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+    background: var(--surface2);
+    color: var(--text-muted);
+  }
+  .day-num-badge.done { background: var(--success); color: white; }
+  .day-num-badge.today { background: var(--accent); color: white; }
+  .phase-day-topic { flex: 1; }
+  .phase-day-date { font-size: 11px; color: var(--text-muted); }
+
+  /* Progress */
+  .progress-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .progress-card h3 { font-size: 14px; margin-bottom: 12px; }
+  .prog-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+    font-size: 13px;
+  }
+  .prog-label { width: 100px; color: var(--text-muted); font-size: 12px; }
+  .prog-bar-bg { flex: 1; height: 8px; background: rgba(255,255,255,0.08); border-radius: 4px; overflow: hidden; }
+  .prog-bar-fill { height: 100%; border-radius: 4px; transition: width 0.5s; }
+  .prog-pct { width: 36px; text-align: right; font-size: 12px; font-weight: 700; }
+
+  .big-number {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1;
+  }
+  .big-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+  .mini-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  /* Confetti/XP popup */
+  .xp-popup {
+    position: fixed;
+    pointer-events: none;
+    font-size: 18px;
+    font-weight: 800;
+    color: var(--accent);
+    animation: floatUp 1s ease forwards;
+    z-index: 999;
+  }
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
+  }
+
+  .level-up-banner {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    padding: 24px 40px;
+    border-radius: 20px;
+    font-size: 24px;
+    font-weight: 800;
+    z-index: 1000;
+    animation: levelUpAnim 2s ease forwards;
+    text-align: center;
+  }
+  @keyframes levelUpAnim {
+    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); }
+    20% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
+    80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+  }
+
+  /* Rest day */
+  .rest-day-msg {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-left: 6px;
+  }
+  .tag-weekend { background: rgba(245,158,11,0.2); color: var(--warning); }
+
+  .empty-future {
+    text-align: center;
+    padding: 30px;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div>
+      <div class="app-title">🎓 AI 대학원 준비</div>
+      <div class="app-sub">연세대학교 인공지능융합대학원</div>
+    </div>
+    <div style="text-align:right">
+      <div id="todayLabel" style="font-size:13px;font-weight:700;"></div>
+      <div id="dDayLabel" style="font-size:11px;color:var(--text-muted);margin-top:2px;"></div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-chip">
+      <span>🔥</span>
+      <span class="val" id="streakVal">0</span>
+      <span class="lbl">일 연속</span>
+    </div>
+    <div class="stat-chip">
+      <span>⚡</span>
+      <span class="val" id="totalXP">0</span>
+      <span class="lbl">XP</span>
+    </div>
+    <div class="stat-chip">
+      <span>🧱</span>
+      <span class="val" id="brickCount">0</span>
+      <span class="lbl">벽돌</span>
+    </div>
+    <div class="stat-chip" style="background:linear-gradient(135deg,rgba(99,102,241,0.3),rgba(139,92,246,0.3));border-color:rgba(99,102,241,0.5);">
+      <span>Lv.</span>
+      <span class="val" id="levelVal">1</span>
+    </div>
+  </div>
+  <div class="xp-section">
+    <div class="xp-bar-bg"><div class="xp-bar-fill" id="xpBar" style="width:0%"></div></div>
+    <div class="xp-labels">
+      <span id="xpCurrent">0 XP</span>
+      <span id="xpNext">다음 레벨까지 100 XP</span>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-btn active" onclick="showPage('today')">📅 오늘</button>
+  <button class="nav-btn" onclick="showPage('calendar')">🗓️ 달력</button>
+  <button class="nav-btn" onclick="showPage('curriculum')">📚 커리큘럼</button>
+  <button class="nav-btn" onclick="showPage('progress')">📊 진도</button>
+</div>
+
+<div id="page-today" class="page active">
+  <div id="todayContent"></div>
+
+  <div class="brick-section">
+    <div class="section-title">🧱 나의 벽</div>
+    <div class="brick-wall" id="brickWall"></div>
+    <div class="brick-count" id="brickLabel"></div>
+  </div>
+</div>
+
+<div id="page-calendar" class="page">
+  <div id="calendarContent"></div>
+</div>
+
+<div id="page-curriculum" class="page">
+  <div id="curriculumContent"></div>
+</div>
+
+<div id="page-progress" class="page">
+  <div id="progressContent"></div>
+</div>
+
+<script>
+// =========================================================
+// CURRICULUM DATA
+// =========================================================
+const PHASES = [
+  {
+    id: 0, name: 'Python 기초', emoji: '🐍', color: '#10b981',
+    startDate: '2026-06-17', endDate: '2026-06-30',
+    days: [
+      { topic: '개발 환경 설정', tasks: [
+        '① colab.research.google.com 접속 → Google 계정 로그인 → [새 노트북] 클릭 → 첫 셀에 print("Hello AI!") 입력 후 Shift+Enter 실행, 출력 확인',
+        '② 새 셀에 x=10, name="홍길동", height=175.5, is_student=True 각각 선언 → print(type(x), type(name), type(height), type(is_student)) 실행 → int/str/float/bool 출력 확인'
+      ]},
+      { topic: '자료형과 자료형 변환', tasks: [
+        '① 셀에 a="42", b="3.14", c=100, d=0 입력 → int(a), float(b), str(c), bool(d), bool(1) 각각 print로 출력 → 변환 결과 5가지를 노트에 기록',
+        '② 다음 3줄 실행: print(10/3) → print(10//3) → print(10%3) 결과 비교. 이어서 2**10 출력하여 1024 확인 → / // % ** 4가지 차이를 한 줄씩 주석(#)으로 설명 작성'
+      ]},
+      { topic: '조건문 (if/elif/else)', tasks: [
+        '① score=85 설정 후 if score>=90: print("A") elif score>=80: print("B") elif score>=70: print("C") elif score>=60: print("D") else: print("F") 코드 작성 → score를 45, 72, 91로 바꿔가며 각각 실행',
+        '② age=23 변수 선언 → if/elif/else로 19세 미만="청소년", 19~64="성인", 65이상="노인" 출력하는 코드 작성 → age를 15, 40, 70으로 바꿔 3가지 경우 모두 테스트'
+      ]},
+      { topic: '반복문 (for/while)', tasks: [
+        '① for i in range(2,10): / for j in range(1,10): / print(f"{i} x {j} = {i*j}") 3줄 코드로 2단~9단 구구단 전체 출력 → 실행 후 출력 줄 수가 72줄인지 확인',
+        '② total=0; i=1 초기화 후 while i<=100: total+=i; i+=1 작성 → print(total) 실행해서 5050 확인. 이어서 같은 합계를 sum(range(1,101))로도 구해서 동일한지 비교'
+      ]},
+      { topic: '리스트', tasks: [
+        '① nums=[10,30,20,50,40] 생성 → nums[0], nums[-1], nums[1:3], nums[::-1] 출력 → nums.append(60), nums.remove(20), nums.sort() 순서대로 실행 후 매번 print(nums)로 변화 확인',
+        '② 리스트 컴프리헨션: squares=[x**2 for x in range(1,11)] 으로 1~10의 제곱수 리스트 생성 → evens=[x for x in range(1,21) if x%2==0] 으로 짝수만 추출 → 둘 다 출력'
+      ]},
+      { topic: '딕셔너리', tasks: [
+        '① student={"이름":"홍길동","나이":25,"전공":"AI","학점":4.0} 생성 → student["이름"], student.get("점수","없음"), list(student.keys()), list(student.values()) 각각 출력',
+        '② words={"apple":"사과","banana":"바나나","cherry":"체리","grape":"포도"} 생성 → for eng, kor in words.items(): print(f"{eng} → {kor}") 로 전체 출력 → words["mango"]="망고" 추가 후 del words["apple"] 삭제, 최종 딕셔너리 출력'
+      ]},
+      { topic: '함수 (def)', tasks: [
+        '① def bmi(weight, height_cm): h=height_cm/100; return round(weight/h**2, 1) 작성 → bmi(70,175) 실행, 결과에 따라 if/elif/else로 "저체중(<18.5)/정상/과체중(≥25)/비만(≥30)" 판정 출력',
+        '② def factorial(n): return 1 if n<=1 else n*factorial(n-1) 재귀함수 작성 → factorial(5)=120, factorial(10)=3628800 확인 → def fibonacci(n): return n if n<=1 else fibonacci(n-1)+fibonacci(n-2) 작성 후 fibonacci(10)=55 확인'
+      ]},
+      { topic: '문자열 다루기', tasks: [
+        '① text="Artificial Intelligence" → text.upper(), text.lower(), text.split(" "), text[0:10], text.replace("Intelligence","Learning"), len(text) 6가지 결과 모두 출력 → 각 결과 옆에 주석으로 의미 기록',
+        '② name="홍길동"; score=95.7; rank=1 → print(f"이름: {name}, 점수: {score:.1f}점, 순위: {rank}등") 출력 → words=text.split(" "); print(f"단어 수: {len(words)}, 첫 단어: {words[0]}, 마지막: {words[-1]}") 출력'
+      ]},
+      { topic: '파일 입출력 & 예외처리', tasks: [
+        '① with open("study_log.txt","w",encoding="utf-8") as f: f.write("Day 9 완료\\n파이썬 기초 학습 중") 실행 → with open("study_log.txt","r",encoding="utf-8") as f: print(f.read()) 로 다시 읽어서 출력 확인',
+        '② try: result=10/0 except ZeroDivisionError as e: print(f"에러: {e}") 실행 → try: num=int("abc") except ValueError as e: print(f"변환 실패: {e}") finally: print("항상 실행됨") 실행 → 두 에러 타입 차이 노트 기록'
+      ]},
+      { topic: 'NumPy 기초', tasks: [
+        '① import numpy as np → arr=np.array([[1,2,3],[4,5,6]]) → print(arr.shape, arr.dtype) 출력 → arr.sum(), arr.mean(), arr.max(), arr.min(), arr.std() 5가지 통계 함수 출력 → np.zeros((3,3)), np.ones((2,4)), np.arange(0,10,2) 생성',
+        '② A=np.array([[1,2],[3,4]]); B=np.array([[5,6],[7,8]]) → A+B (원소합), A*B (원소곱), A@B (행렬곱) 3가지 출력하고 결과 차이 확인 → A.T (전치행렬) 출력 → np.linalg.det(A) 로 행렬식 계산'
+      ]},
+      { topic: 'Pandas 기초', tasks: [
+        '① import pandas as pd → df=pd.DataFrame({"이름":["철수","영희","민준","수진"],"수학":[90,85,78,92],"영어":[88,92,70,85],"파이썬":[95,80,88,76]}) → df.head(), df.shape, df.dtypes, df.describe() 각각 실행',
+        '② df["평균"]=df[["수학","영어","파이썬"]].mean(axis=1).round(1) 열 추가 → df.sort_values("평균", ascending=False) 로 성적 순위 출력 → df[df["수학"]>=88] 로 수학 88점 이상 학생만 필터링 출력'
+      ]},
+      { topic: 'Matplotlib 시각화', tasks: [
+        '① import matplotlib.pyplot as plt; plt.rcParams["font.family"]="Malgun Gothic" → x=["월","화","수","목","금"], y=[1.5,2,0.5,2.5,2] → plt.figure(figsize=(8,4)); plt.plot(x,y,"o-",color="steelblue"); plt.title("이번 주 공부 시간"); plt.ylabel("시간"); plt.grid(True); plt.show()',
+        '② 같은 데이터로 plt.bar(x,y,color=["green","green","red","green","green"]) 막대 그래프 생성 → plt.axhline(y=sum(y)/len(y), color="red", linestyle="--", label="평균") 평균선 추가 → plt.legend(); plt.show() 실행'
+      ]},
+      { topic: 'Python 종합 복습', tasks: [
+        '① 지금까지 학습 내용을 Google Colab 노트에 섹션별 정리: "변수/자료형" → "제어문" → "함수" → "NumPy" → "Pandas" → "Matplotlib" 각 항목에 핵심 코드 1~2줄씩 주석과 함께 작성 (총 1개 노트북에)',
+        '② 미니 프로젝트: 학생 5명 데이터(이름, 국어, 수학, 영어 점수)를 DataFrame으로 만들고 → 과목별 평균 계산 → 총점 기준 석차 매기기 → 과목별 평균 막대 그래프 출력하는 코드를 30줄 이내로 작성'
+      ]},
+    ]
+  },
+  {
+    id: 1, name: '수학 기초 (선형대수·미적분)', emoji: '📐', color: '#3b82f6',
+    startDate: '2026-07-01', endDate: '2026-07-14',
+    days: [
+      { topic: '벡터 기초', tasks: [
+        '① YouTube "3Blue1Brown 선형대수의 본질 1화" (한국어 자막) 시청 → 벡터=방향+크기 개념 노트 정리 → v1=[3,4], v2=[1,2] 손으로 그린 후 v1+v2 결과 좌표 계산',
+        '② import numpy as np; v1=np.array([3,4]); v2=np.array([1,2]) → v1+v2, v1-v2, 2*v1, np.dot(v1,v2) 출력 → np.linalg.norm(v1) 로 크기(=5.0) 확인 → 두 벡터의 코사인 유사도 = np.dot(v1,v2)/(np.linalg.norm(v1)*np.linalg.norm(v2)) 계산'
+      ]},
+      { topic: '행렬 기초', tasks: [
+        '① YouTube "3Blue1Brown 선형대수의 본질 3화" 시청 → A=[[1,2],[3,4]], B=[[5,6],[7,8]] 종이에 직접 그리고 A+B, A-B 손계산 후 답 확인',
+        '② import numpy as np; A=np.array([[1,2],[3,4]]); B=np.array([[5,6],[7,8]]) → A+B, A-B, A*3 출력 → A.shape, A.ndim, A.size 출력 → np.zeros((3,3)), np.eye(3) (단위행렬) 생성 및 출력'
+      ]},
+      { topic: '행렬 곱셈', tasks: [
+        '① 행렬 곱 규칙: (m×n) @ (n×p) = (m×p). A=[[1,2,3],[4,5,6]] (2×3), B=[[1,0],[0,1],[1,1]] (3×2) → A@B 손계산 (결과: 2×2 행렬) → 계산 과정을 행×열 내적으로 각 원소 직접 구하기',
+        '② np.array로 A, B 입력 후 A@B, np.matmul(A,B) 두 방법으로 결과 확인 → A*B (원소별 곱, 같은 shape 필요)와 A@B (행렬 곱) 차이 비교 → C=np.array([[2,1],[1,3]]); print(C@np.eye(2)) 로 단위행렬 곱 결과 확인'
+      ]},
+      { topic: '전치행렬과 특수행렬', tasks: [
+        '① A=np.array([[1,2,3],[4,5,6]]) → print(A.T) 로 전치(shape 2×3→3×2) 확인 → np.eye(4) (4×4 단위행렬), np.diag([1,2,3,4]) (대각행렬), np.zeros((3,3)), np.ones((2,3)) 생성 및 출력',
+        '② 대칭행렬 확인: S=np.array([[1,2,3],[2,5,4],[3,4,6]]) → np.array_equal(S, S.T) 가 True인지 확인 → A@A.T 계산 (항상 대칭행렬) → (A@A.T) == (A@A.T).T 비교'
+      ]},
+      { topic: '역행렬과 연립방정식', tasks: [
+        '① A=np.array([[2,1],[5,3]]) → np.linalg.inv(A) 로 역행렬 계산 → A @ np.linalg.inv(A) 결과가 단위행렬인지 확인 (부동소수점 오차 허용) → np.linalg.det(A) 로 행렬식 출력 (≠0이면 역행렬 존재)',
+        '② 연립방정식: 2x+y=5, 5x+3y=13 을 행렬식 Ax=b로 표현 → A=np.array([[2,1],[5,3]]); b=np.array([5,13]) → x=np.linalg.solve(A,b) 실행 → print(x) 로 해 확인 후 원래 방정식에 대입해 검증'
+      ]},
+      { topic: '고유값과 고유벡터', tasks: [
+        '① YouTube "고유값, 고유벡터란?" 영상 10분 시청 (StatQuest 추천) → 핵심 공식 Av=λv 를 노트에 쓰고 의미 정리: "행렬 A를 곱해도 방향이 변하지 않는 특별한 벡터 v"',
+        '② A=np.array([[4,1],[2,3]]) → eigenvalues, eigenvectors=np.linalg.eig(A) → print("고유값:", eigenvalues) → print("고유벡터:", eigenvectors) → A@eigenvectors[:,0] 와 eigenvalues[0]*eigenvectors[:,0] 비교해서 Av=λv 검증'
+      ]},
+      { topic: '미분 기초', tasks: [
+        '① 미분 = "순간 변화율" = 함수 그래프의 기울기. 공식 암기: d/dx(xⁿ)=nxⁿ⁻¹, d/dx(상수)=0 → 손으로 계산: f(x)=3x³-2x²+5x-1 → f\'(x)= ? (답: 9x²-4x+5)',
+        '② import numpy as np; import matplotlib.pyplot as plt → x=np.linspace(-3,3,100); f=x**3-3*x → df=3*x**2-3 (도함수) → plt.plot(x,f,label="f(x)"); plt.plot(x,df,label="f\'(x)",linestyle="--") → plt.axhline(0,color="black",linewidth=0.5); plt.legend(); plt.grid(); plt.show() → x=0에서 f\'=−3임을 그래프로 확인'
+      ]},
+      { topic: '편미분', tasks: [
+        '① 편미분 개념: f(x,y)=x²+2xy+y² → ∂f/∂x = 2x+2y (y를 상수 취급) → ∂f/∂y = 2x+2y (x를 상수 취급) → x=1,y=2 대입해 각각 값 계산 (∂f/∂x=6, ∂f/∂y=6)',
+        '② from sympy import symbols, diff → x,y=symbols("x y") → f=x**2+2*x*y+y**2 → diff(f,x), diff(f,y) 출력 → g=x**3*y+np.e**x*y**2 형태 함수도 sympy로 편미분 확인 → 결과를 손계산과 비교'
+      ]},
+      { topic: '연쇄법칙 (Chain Rule)', tasks: [
+        '① 연쇄법칙: g(f(x))를 미분하면 g\'(f(x)) × f\'(x). 예: h(x)=(3x+1)⁵ → f(x)=3x+1, g(u)=u⁵ → h\'(x)=5(3x+1)⁴×3=15(3x+1)⁴ 손계산 → 신경망에서 역전파가 이 법칙의 반복 적용임을 노트 정리',
+        '② 역전파 흐름 직접 추적: 입력x→[×2]→[+1]→[제곱]→출력L. x=3일 때 순전파: 3→6→7→49. 역전파: dL/d출력=1, d출력/d중간=2×7=14, d중간/d입력=2, dL/dx=1×14×2=28 → 각 단계 값을 노트에 화살표로 그려가며 계산'
+      ]},
+      { topic: '경사하강법', tasks: [
+        '① 개념: f(x)=x²-4x+4=(x-2)² 의 최솟값을 경사하강법으로 찾기. 초기값x=8, 학습률lr=0.1 → x_new = x - lr×f\'(x) = x - lr×(2x-4) → 10번 반복하며 x 값이 2에 수렴하는 과정 손계산 (3~4번만 해도 패턴 파악)',
+        '② Python 구현: x=8.0; lr=0.1 → for i in range(20): grad=2*x-4; x=x-lr*grad; print(f"step{i+1}: x={x:.4f}, f(x)={(x-2)**2:.6f}") → matplotlib으로 수렴 과정 그래프 출력 (x축=반복횟수, y축=x 값)'
+      ]},
+      { topic: '그래디언트 벡터', tasks: [
+        '① f(x,y)=x²+y² 의 그래디언트 ∇f=[∂f/∂x, ∂f/∂y]=[2x, 2y] → (x,y)=(1,1)에서 그래디언트=[2,2] 손계산 → 이 방향이 f 값이 가장 빠르게 증가하는 방향임을 이해 → 경사하강법은 이 반대 방향(-∇f)으로 이동',
+        '② 2변수 경사하강법: f(x,y)=(x-1)²+(y-2)² 최솟값 찾기 → x=5.0; y=5.0; lr=0.2 → for i in range(15): gx=2*(x-1); gy=2*(y-2); x-=lr*gx; y-=lr*gy; print(f"x={x:.3f}, y={y:.3f}") → (1.0, 2.0)으로 수렴 확인'
+      ]},
+      { topic: '선형변환과 SVD/PCA 직관', tasks: [
+        '① 선형변환: A=np.array([[2,0],[0,0.5]]) (x축 2배 확대, y축 0.5배 축소) → 점 v=np.array([1,1]) 에 A@v 적용 → matplotlib으로 변환 전(파란점)과 후(빨간점) 시각화',
+        '② PCA 직관 실습: from sklearn.decomposition import PCA → np.random.seed(42); X=np.random.randn(100,2)@np.array([[3,1],[1,1]]) 로 상관된 2D 데이터 생성 → pca=PCA(n_components=2); pca.fit(X) → print("설명 분산 비율:", pca.explained_variance_ratio_) → 첫 번째 성분이 데이터 분산의 몇%를 설명하는지 확인'
+      ]},
+      { topic: '수학 기초 종합 복습', tasks: [
+        '① 핵심 공식 정리 (노트 또는 Colab 마크다운): 벡터내적/행렬곱 조건/역행렬 존재조건/고유값 공식/미분기본공식/경사하강법 업데이트 규칙 → 각 공식 옆에 "딥러닝에서 쓰이는 곳" 한 줄 메모',
+        '② Colab에서 종합 실습: 3×3 행렬 A 임의 생성 → 전치, 역행렬, 행렬식, 고유값 모두 계산 → f(x)=x³-6x²+9x 함수를 -1~5 범위로 그래프 출력 후 경사하강법으로 최솟값(x≈3) 찾기'
+      ]},
+    ]
+  },
+  {
+    id: 2, name: '통계 & 확률', emoji: '📊', color: '#f59e0b',
+    startDate: '2026-07-15', endDate: '2026-07-28',
+    days: [
+      { topic: '기술통계', tasks: [
+        '① 데이터: scores=[78,85,90,72,88,91,65,83,79,95] → 손으로 평균(mean)=82.6, 중앙값(median)=84, 최빈값(mode) 계산 → import numpy as np; np.mean(scores), np.median(scores), np.std(scores), np.var(scores) 로 확인',
+        '② import pandas as pd → pd.Series(scores).describe() 실행 → count/mean/std/min/25%/50%/75%/max 각 항목 의미를 노트에 한 줄씩 설명 → 평균과 중앙값이 크게 다른 경우(이상치 있을 때) 예시 데이터 만들어 비교'
+      ]},
+      { topic: '분포와 시각화', tasks: [
+        '① np.random.seed(42); data=np.random.normal(170,10,200) 로 평균170 표준편차10의 키 데이터 200개 생성 → plt.hist(data, bins=20, edgecolor="black") 히스토그램 → plt.axvline(np.mean(data), color="red", label="평균") → plt.legend(); plt.show()',
+        '② 같은 데이터로 plt.boxplot(data) 박스플롯 그리기 → 박스의 아래선/중간선/위선이 각각 25%/50%/75% 분위수임을 확인 → 수염 바깥 점이 이상치(outlier) → 두 그래프를 plt.subplot(1,2,1), plt.subplot(1,2,2) 로 나란히 출력'
+      ]},
+      { topic: '확률 기초', tasks: [
+        '① 주사위 2개를 굴릴 때 합이 7이 되는 경우의 수: 전체 36가지 경우를 [(i,j) for i in range(1,7) for j in range(1,7)] 로 생성 → 합이 7인 경우만 필터링 → 확률 = 6/36 = 1/6 계산 및 출력',
+        '② 몬테카를로 시뮬레이션: np.random.seed(0); rolls=np.random.randint(1,7,(100000,2)) → sums=rolls.sum(axis=1) → prob_7=(sums==7).mean() → print(f"시뮬레이션 확률: {prob_7:.4f}, 이론값: {1/6:.4f}") → 시행 횟수를 1000, 10000, 100000으로 바꾸며 이론값 수렴 확인'
+      ]},
+      { topic: '조건부 확률 & 베이즈 정리', tasks: [
+        '① 베이즈 정리 예제: 병 양성 검사 시나리오. 유병률=0.01, 민감도(진짜 환자 양성)=0.95, 특이도(건강인 음성)=0.90 → P(병|양성) = (0.95×0.01) / (0.95×0.01 + 0.10×0.99) = ? 손계산 후 Python으로 확인 → 결과가 약 8.7%로 나와 직관에 반함을 이해',
+        '② 스팸 필터 예제: 1000개 이메일 중 스팸200/정상800 → "무료"단어: 스팸에서 160번, 정상에서 40번 등장 → P(스팸|"무료") 베이즈로 계산 = (0.8×0.2) / (0.8×0.2 + 0.05×0.8) = ? → Python으로 계산 검증'
+      ]},
+      { topic: '확률분포', tasks: [
+        '① 이항분포: 동전 10번 던질 때 앞면 k번 확률. from scipy.stats import binom → x=range(0,11); probs=[binom.pmf(k,10,0.5) for k in x] → plt.bar(x,probs); plt.xlabel("앞면 횟수"); plt.title("B(10, 0.5)"); plt.show() → 가장 높은 확률이 5번임 확인',
+        '② 포아송분포: 1시간에 평균 3명 방문 시 k명 방문 확률. from scipy.stats import poisson → x=range(0,12); probs=poisson.pmf(x,mu=3) → plt.bar(x,probs) → 이항분포와 포아송분포를 같은 그림에 비교 출력 (λ=np 관계 설명 주석 추가)'
+      ]},
+      { topic: '정규분포', tasks: [
+        '① from scipy.stats import norm → x=np.linspace(-4,4,200); plt.plot(x,norm.pdf(x,0,1), label="N(0,1)") → plt.fill_between(x,norm.pdf(x),where=(x>=-1)&(x<=1),alpha=0.3,label="68%") → 같은 방식으로 2σ(95%), 3σ(99.7%) 구간도 채색 → 그래프 출력',
+        '② Z-점수 실습: 평균70 표준편차10인 시험에서 내 점수=85 → Z=(85-70)/10=1.5 계산 → norm.cdf(1.5) 로 상위 몇 %인지 계산 (약 상위 6.7%) → norm.ppf(0.9) 로 상위 10% 커트라인 점수 역산'
+      ]},
+      { topic: '중심극한정리', tasks: [
+        '① 시뮬레이션: 균등분포(0~1)에서 n개 샘플 뽑아 평균 계산, 10000번 반복 → n=1,5,30으로 바꾸며 표본평균 분포 시각화 → 코드: for n in [1,5,30]: means=[np.mean(np.random.uniform(0,1,n)) for _ in range(10000)]; plt.hist(means,bins=50,alpha=0.6,label=f"n={n}") → plt.legend(); plt.show()',
+        '② 결과 관찰: n이 커질수록 히스토그램이 정규분포 모양으로 수렴하는 것 확인 → 표본평균의 표준편차(표준오차) = σ/√n 공식 검증: n=30일 때 표준오차 이론값=1/√30≈0.183 vs 시뮬레이션 결과 np.std(means) 비교'
+      ]},
+      { topic: '통계적 추론과 신뢰구간', tasks: [
+        '① 점추정 vs 구간추정: 표본평균 x̄는 모평균 μ의 점추정값. 95% 신뢰구간 = x̄ ± 1.96×(σ/√n) → 예제: np.random.seed(1); sample=np.random.normal(170,10,50) → x_bar=sample.mean(); se=10/np.sqrt(50) → ci=(x_bar-1.96*se, x_bar+1.96*se) → print(f"95% CI: ({ci[0]:.2f}, {ci[1]:.2f})")',
+        '② 신뢰구간 반복 실험: 위 과정을 100번 반복 → 각 신뢰구간이 모평균(170)을 포함하는지 확인 → contains=[True if l<=170<=u else False for l,u in [계산]] → print(f"포함 비율: {sum(contains)/100:.0%}") → 95% 근처로 나오는지 확인'
+      ]},
+      { topic: '가설검정', tasks: [
+        '① 귀무가설 H₀: 우리 반 평균키=170cm / 대립가설 H₁: 평균키≠170cm → from scipy import stats; sample=np.array([172,168,175,171,169,178,165,173,170,176]) → t_stat, p_value=stats.ttest_1samp(sample, 170) → print(f"t통계량: {t_stat:.3f}, p값: {p_value:.3f}") → p>0.05면 귀무가설 채택',
+        '② 두 집단 비교: groupA=np.random.normal(75,10,30); groupB=np.random.normal(80,10,30) → t_stat,p=stats.ttest_ind(groupA,groupB) → p<0.05 이면 두 집단 평균 차이가 통계적으로 유의 → plt.boxplot([groupA,groupB],labels=["A","B"]); plt.show() 로 시각화'
+      ]},
+      { topic: '상관관계', tasks: [
+        '① 상관계수 이해: np.random.seed(0); x=np.random.randn(100); y=0.8*x+0.2*np.random.randn(100) → corr=np.corrcoef(x,y)[0,1] → plt.scatter(x,y,alpha=0.5); plt.title(f"r={corr:.2f}"); plt.show() → y=-0.8*x+... 로 바꾸면 r이 음수로 나옴 확인',
+        '② 다변수 상관행렬: import seaborn as sns → df=pd.DataFrame({"공부시간":[2,3,5,1,4],"성적":[65,70,88,55,82],"수면":[8,7,6,9,7]}) → corr_matrix=df.corr() → sns.heatmap(corr_matrix,annot=True,cmap="coolwarm",center=0) → plt.show() → 공부시간-성적 상관이 가장 높은지 확인'
+      ]},
+      { topic: '선형회귀와 R²', tasks: [
+        '① 최소제곱법 직접 계산: x=[1,2,3,4,5]; y=[2,4,5,4,5] → x̄=np.mean(x); ȳ=np.mean(y) → 기울기 β₁=Σ(xᵢ-x̄)(yᵢ-ȳ)/Σ(xᵢ-x̄)² 공식으로 손계산 → 절편 β₀=ȳ-β₁×x̄ 계산 → 회귀선 y=β₀+β₁x 구하기',
+        '② R² 계산: from sklearn.linear_model import LinearRegression → X=np.array(x).reshape(-1,1); model=LinearRegression().fit(X,y) → print(f"기울기:{model.coef_[0]:.2f}, 절편:{model.intercept_:.2f}, R²:{model.score(X,y):.3f}") → plt로 산점도 + 회귀선 함께 시각화'
+      ]},
+      { topic: '정보이론과 교차 엔트로피', tasks: [
+        '① 엔트로피 계산: 동전이 앞면만 나오는 경우(p=1) → H=-1×log2(1)=0 bits (불확실성 없음). 공정한 동전(p=0.5) → H=-0.5×log2(0.5)-0.5×log2(0.5)=1 bit (불확실성 최대). 4면체(p=0.25씩) → H=2 bits → import numpy as np; def entropy(probs): return -np.sum([p*np.log2(p) for p in probs if p>0]) 함수 작성 후 위 3가지 확인',
+        '② 교차 엔트로피 손실: 실제 레이블 y=[1,0,0] (고양이), 모델 예측 ŷ=[0.7,0.2,0.1] → CE = -Σyᵢ×log(ŷᵢ) = -1×log(0.7) = 0.357 → 잘못된 예측 ŷ=[0.1,0.7,0.2] 이면 CE=-log(0.1)=2.303으로 훨씬 큰 패널티 → Python으로 계산 확인'
+      ]},
+      { topic: '통계 종합 복습', tasks: [
+        '① Kaggle에서 타이타닉 데이터셋 다운로드 (또는 pd.read_csv로 URL 직접 로드) → df.info(), df.isnull().sum() 결측치 확인 → df["Survived"].value_counts() 생존율 → df.groupby("Pclass")["Survived"].mean() 객실 등급별 생존율 비교',
+        '② 타이타닉 EDA 마무리: df["Age"].hist(bins=20) → df.boxplot(column="Age",by="Survived") → sns.heatmap(df[["Survived","Pclass","Age","Fare"]].corr(),annot=True) → 분석 결과 3가지 인사이트를 주석으로 노트에 정리'
+      ]},
+    ]
+  },
+  {
+    id: 3, name: '머신러닝 기초', emoji: '🤖', color: '#ef4444',
+    startDate: '2026-07-29', endDate: '2026-08-11',
+    days: [
+      { topic: 'ML 개요', tasks: [
+        '① 지도학습(레이블 있음: 분류/회귀) vs 비지도학습(레이블 없음: 군집/차원축소) vs 강화학습(보상 신호) → 각 유형별 대표 알고리즘 3개씩 노트 정리 → "내가 풀고 싶은 문제는 어느 유형?" 자유 작성',
+        '② ML 워크플로우 그리기: 문제정의 → 데이터수집 → EDA → 전처리 → 모델선택 → 학습 → 평가 → 개선 → 배포 → 각 단계에서 발생하는 대표 이슈 한 가지씩 노트 작성 (예: 전처리=결측치 처리)'
+      ]},
+      { topic: '선형회귀 실습', tasks: [
+        '① from sklearn.datasets import fetch_california_housing; from sklearn.linear_model import LinearRegression; from sklearn.model_selection import train_test_split → data=fetch_california_housing(); X,y=data.data,data.target → X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=42)',
+        '② model=LinearRegression().fit(X_train,y_train) → y_pred=model.predict(X_test) → from sklearn.metrics import mean_squared_error,r2_score → print(f"MSE:{mean_squared_error(y_test,y_pred):.3f}, R²:{r2_score(y_test,y_pred):.3f}") → plt.scatter(y_test[:100],y_pred[:100],alpha=0.5); plt.plot([0,5],[0,5],"r--"); plt.xlabel("실제값"); plt.ylabel("예측값"); plt.show()'
+      ]},
+      { topic: '특성 스케일링', tasks: [
+        '① 스케일링 필요성 실험: X=np.array([[1000,1],[2000,2],[3000,3]]) (컬럼1: 연봉단위, 컬럼2: 나이단위) → 스케일 차이가 모델에 미치는 영향 설명 노트 작성',
+        '② from sklearn.preprocessing import StandardScaler, MinMaxScaler → StandardScaler: 평균0 표준편차1로 변환 (z-score) → MinMaxScaler: 0~1 범위로 변환 → X_train에 fit_transform, X_test에 transform(fit 금지!) → 스케일링 전후 X_train[:,0].mean()과 std() 비교 출력'
+      ]},
+      { topic: '로지스틱 회귀', tasks: [
+        '① 시그모이드 함수 시각화: def sigmoid(x): return 1/(1+np.exp(-x)) → x=np.linspace(-6,6,100) → plt.plot(x,sigmoid(x)); plt.axhline(0.5,linestyle="--",color="red"); plt.axvline(0,linestyle="--",color="gray"); plt.title("Sigmoid Function"); plt.grid(); plt.show() → x=0일 때 출력=0.5 확인',
+        '② from sklearn.linear_model import LogisticRegression; from sklearn.datasets import load_breast_cancer → data=load_breast_cancer(); X,y=data.data,data.target → X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=42) → scaler=StandardScaler(); X_train=scaler.fit_transform(X_train); X_test=scaler.transform(X_test) → model=LogisticRegression().fit(X_train,y_train) → print(f"정확도: {model.score(X_test,y_test):.3f}")'
+      ]},
+      { topic: '모델 평가 지표', tasks: [
+        '① from sklearn.metrics import classification_report, confusion_matrix → y_pred=model.predict(X_test) → print(classification_report(y_test,y_pred,target_names=data.target_names)) → precision(정밀도)/recall(재현율)/f1-score 각 수치를 confusion matrix와 연결해서 손계산으로 검증',
+        '② import seaborn as sns → cm=confusion_matrix(y_test,y_pred) → sns.heatmap(cm,annot=True,fmt="d",cmap="Blues",xticklabels=data.target_names,yticklabels=data.target_names) → plt.ylabel("실제"); plt.xlabel("예측"); plt.show() → TP/TN/FP/FN 각 칸 의미 주석 작성'
+      ]},
+      { topic: '결정 트리', tasks: [
+        '① from sklearn.tree import DecisionTreeClassifier, export_text; from sklearn.datasets import load_iris → iris=load_iris(); X,y=iris.data,iris.target → X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=42) → tree=DecisionTreeClassifier(max_depth=3,random_state=42).fit(X_train,y_train)',
+        '② print(export_text(tree,feature_names=iris.feature_names)) → 트리 규칙 확인 → from sklearn.tree import plot_tree → plt.figure(figsize=(12,6)); plot_tree(tree,feature_names=iris.feature_names,class_names=iris.target_names,filled=True); plt.show() → tree.feature_importances_ 로 어떤 특성이 분류에 중요한지 출력'
+      ]},
+      { topic: '랜덤 포레스트', tasks: [
+        '① from sklearn.ensemble import RandomForestClassifier → rf=RandomForestClassifier(n_estimators=100,random_state=42).fit(X_train,y_train) → print(f"결정트리 정확도: {tree.score(X_test,y_test):.3f}") → print(f"랜덤포레스트 정확도: {rf.score(X_test,y_test):.3f}") → 왜 앙상블이 단일 트리보다 성능이 좋은지 노트 설명',
+        '② 특성 중요도 시각화: importances=pd.Series(rf.feature_importances_,index=iris.feature_names).sort_values(ascending=False) → plt.barh(importances.index,importances.values) → plt.xlabel("Feature Importance") → plt.show() → 가장 중요한 특성 2개가 무엇인지 확인'
+      ]},
+      { topic: 'SVM', tasks: [
+        '① from sklearn.svm import SVC → 타이타닉 또는 iris 데이터로 SVC(kernel="linear"), SVC(kernel="rbf") 두 가지 훈련 → 각각 정확도 출력 → 선형 커널 vs RBF 커널 결과 비교 → "커널=데이터를 고차원으로 변환해 선형분리 가능하게 함" 개념 노트 정리',
+        '② 결정 경계 시각화 (2D): iris 데이터 중 2개 특성만 사용 → X2=X[:,:2]; clf=SVC(kernel="rbf").fit(X2_train,y_train) → meshgrid로 전체 영역 예측 후 contourf로 결정 영역 색칠 → 데이터 포인트 산점도 위에 겹쳐서 출력'
+      ]},
+      { topic: 'KNN', tasks: [
+        '① KNN 원리 직접 확인: 점 (5,5)의 k=3 이웃 찾기. 데이터: [(1,2,"A"),(3,4,"A"),(6,7,"B"),(8,1,"B"),(5,6,"A")] → 각 점까지 유클리드 거리 손계산 → 가장 가까운 3개 선택 → 다수결로 클래스 결정',
+        '② from sklearn.neighbors import KNeighborsClassifier → for k in [1,3,5,7,9,15]: knn=KNeighborsClassifier(n_neighbors=k).fit(X_train,y_train); acc=knn.score(X_test,y_test); print(f"k={k}: {acc:.3f}") → 최적 k 찾기 → k=1일 때 과적합, k가 너무 크면 과소적합 패턴 노트 정리'
+      ]},
+      { topic: 'K-means 클러스터링', tasks: [
+        '① from sklearn.cluster import KMeans → np.random.seed(42); X_cluster=np.vstack([np.random.normal([0,0],1,(100,2)),np.random.normal([5,5],1,(100,2)),np.random.normal([0,5],1,(100,2))]) → kmeans=KMeans(n_clusters=3,random_state=42).fit(X_cluster) → labels=kmeans.labels_; centers=kmeans.cluster_centers_',
+        '② plt.scatter(X_cluster[:,0],X_cluster[:,1],c=labels,cmap="viridis",alpha=0.6) → plt.scatter(centers[:,0],centers[:,1],marker="*",s=300,c="red",label="중심점") → plt.legend(); plt.title("K-means 결과"); plt.show() → Elbow Method: [KMeans(n_clusters=k).fit(X_cluster).inertia_ for k in range(1,9)] 계산 후 꺾이는 지점(최적 k) 찾기'
+      ]},
+      { topic: '과적합과 정규화', tasks: [
+        '① 과적합 시각화: np.random.seed(0); x=np.linspace(0,1,10); y=np.sin(2*np.pi*x)+0.3*np.random.randn(10) → 1차, 5차, 9차 다항 회귀 각각 적합 → plt에 원본 데이터+3가지 곡선 비교 출력 → 9차가 훈련 데이터에만 과적합된 것 시각적으로 확인',
+        '② from sklearn.linear_model import Ridge, Lasso → Ridge(alpha=1.0): L2 정규화 (가중치 작게 유지) → Lasso(alpha=0.01): L1 정규화 (일부 가중치 0으로 만들어 특성 선택 효과) → california housing 데이터로 LinearRegression vs Ridge vs Lasso 테스트 MSE 비교 출력'
+      ]},
+      { topic: '교차 검증', tasks: [
+        '① from sklearn.model_selection import cross_val_score → rf=RandomForestClassifier(n_estimators=50,random_state=42) → scores=cross_val_score(rf,X,y,cv=5,scoring="accuracy") → print(f"5-fold CV 정확도: {scores} → 평균: {scores.mean():.3f} ± {scores.std():.3f}") → 단순 train/test split 결과와 비교',
+        '② from sklearn.model_selection import GridSearchCV → param_grid={"n_estimators":[50,100],"max_depth":[3,5,None],"min_samples_split":[2,5]} → grid=GridSearchCV(RandomForestClassifier(random_state=42),param_grid,cv=3,scoring="accuracy") → grid.fit(X_train,y_train) → print(f"최적 파라미터: {grid.best_params_}, 점수: {grid.best_score_:.3f}")'
+      ]},
+      { topic: 'ML 종합 복습', tasks: [
+        '① ML 알고리즘 비교표 작성 (노트/Colab 마크다운): 알고리즘명 / 유형(분류·회귀·클러스터링) / 핵심 개념 한 줄 / 장점 / 단점 / 주요 하이퍼파라미터 → 선형회귀, 로지스틱회귀, 결정트리, 랜덤포레스트, SVM, KNN, K-means 7가지',
+        '② Kaggle "Titanic - Machine Learning from Disaster" 대회 페이지 방문 → 데이터 다운로드 → 전처리(결측치/범주형 인코딩) → RandomForestClassifier 또는 LogisticRegression 으로 예측 → submission.csv 생성 후 제출 시도 🏆'
+      ]},
+    ]
+  },
+  {
+    id: 4, name: '딥러닝 기초', emoji: '🧠', color: '#8b5cf6',
+    startDate: '2026-08-12', endDate: '2026-08-25',
+    days: [
+      { topic: '인공신경망 기초', tasks: [
+        '① YouTube "3Blue1Brown - 신경망이란 무엇인가?" (한국어 자막, 19분) 시청 → 입력층→은닉층→출력층 구조, 가중치(W)와 편향(b) 개념 노트 정리 → 뉴런 하나의 계산: output = activation(W·x + b) 공식 손으로 써보기',
+        '② NumPy로 퍼셉트론 직접 구현: def perceptron(x,w,b): return 1 if np.dot(x,w)+b>0 else 0 → AND gate: w=[0.5,0.5], b=-0.7 로 (0,0)→0, (0,1)→0, (1,0)→0, (1,1)→1 확인 → OR gate: w=[0.5,0.5], b=-0.2 로 4가지 경우 확인 → XOR은 단층으로 안 됨 확인'
+      ]},
+      { topic: '활성화 함수와 역전파', tasks: [
+        '① 활성화 함수 시각화: x=np.linspace(-5,5,100) → plt.figure(figsize=(12,4)) → subplot(1,3,1): ReLU = np.maximum(0,x) → subplot(1,3,2): Sigmoid = 1/(1+np.exp(-x)) → subplot(1,3,3): Tanh = np.tanh(x) → plt.suptitle("활성화 함수 비교") → plt.show() → 각 함수의 출력 범위, 기울기 소실 특성 노트',
+        '② 역전파 손계산: 입력x=2.0 → [×3]→6 → [+1]→7 → [제곱]→49=L. 역전파: dL/d(7²)=1, d(7²)/d7=14, d(7)/d(3x)=1, d(3x)/dx=3 → 연쇄법칙으로 dL/dx=1×14×1×3=42 계산 → 수치미분으로 검증: (f(x+0.001)-f(x-0.001))/(0.002) ≈ 42'
+      ]},
+      { topic: 'PyTorch 입문', tasks: [
+        '① import torch → t=torch.tensor([[1.0,2.0],[3.0,4.0]]) → t.shape, t.dtype, t.device 출력 → torch.zeros(3,3), torch.ones(2,4), torch.randn(3,3) 생성 → t+t, t*t, t@t (행렬곱) 연산 → t.numpy() 로 NumPy 변환, torch.from_numpy(arr) 역변환',
+        '② 자동미분(autograd): x=torch.tensor(3.0,requires_grad=True) → y=(x-2)**2 → y.backward() → print(x.grad) → 결과=2*(3-2)=2.0 확인 → x=torch.randn(3,requires_grad=True); z=torch.sum(x**2) → z.backward() → x.grad 확인 (각 원소의 2배) → Colab 런타임→GPU 변경 후 tensor.to("cuda") 실행'
+      ]},
+      { topic: '첫 신경망 구현 (XOR)', tasks: [
+        '① import torch.nn as nn → class XORNet(nn.Module): / def __init__(self): super().__init__(); self.fc1=nn.Linear(2,4); self.fc2=nn.Linear(4,1) / def forward(self,x): return torch.sigmoid(self.fc2(torch.relu(self.fc1(x)))) → model=XORNet()',
+        '② X=torch.tensor([[0,0],[0,1],[1,0],[1,1]],dtype=torch.float32); y=torch.tensor([[0],[1],[1],[0]],dtype=torch.float32) → optimizer=torch.optim.Adam(model.parameters(),lr=0.01); criterion=nn.BCELoss() → for epoch in range(1000): pred=model(X); loss=criterion(pred,y); optimizer.zero_grad(); loss.backward(); optimizer.step(); if epoch%200==0: print(f"Epoch{epoch}: loss={loss:.4f}") → 최종 예측값이 [0,1,1,0]에 수렴하는지 확인'
+      ]},
+      { topic: '최적화 알고리즘', tasks: [
+        '① SGD vs Adam 비교 실험: 같은 XORNet을 SGD(lr=0.1), Adam(lr=0.01), RMSprop(lr=0.01) 세 가지 옵티마이저로 각각 500 epoch 훈련 → 매 10 epoch마다 loss 기록 → plt로 3가지 loss curve 비교 출력 → Adam이 가장 빠르게 수렴하는지 확인',
+        '② 학습률 실험: Adam으로 lr=0.001, 0.01, 0.1, 1.0 4가지로 같은 모델 훈련 → loss curve 비교 → lr이 너무 크면 발산(loss 급등), 너무 작으면 느린 수렴 패턴 확인 → "lr=0.001~0.01이 안전한 출발점" 노트 정리'
+      ]},
+      { topic: 'CNN 기초와 MNIST', tasks: [
+        '① CNN 개념 정리: 합성곱 연산 = 필터(커널)가 이미지 위를 슬라이딩하며 특징 추출. 5×5 이미지에 3×3 필터 → 출력 크기 = (5-3+1)=3×3. MaxPooling: 2×2 영역에서 최댓값 선택해 크기 절반 → 이 흐름을 그림으로 노트에 그리기',
+        '② import torchvision; from torch.utils.data import DataLoader → train_data=torchvision.datasets.MNIST("./data",train=True,transform=torchvision.transforms.ToTensor(),download=True) → class CNN(nn.Module): conv1=nn.Conv2d(1,16,3); pool=nn.MaxPool2d(2); fc=nn.Linear(16*13*13,10) → 훈련 3 epoch 후 test accuracy 95% 이상 목표'
+      ]},
+      { topic: '전이학습', tasks: [
+        '① from torchvision import models → resnet=models.resnet18(pretrained=True) → print(resnet) 로 전체 아키텍처 확인 → 레이어 수, 파라미터 수: sum(p.numel() for p in resnet.parameters()) 출력 (약 1100만) → ResNet의 skip connection(잔차 연결)이 기울기 소실을 어떻게 막는지 노트 설명',
+        '② 전이학습 파인튜닝: for param in resnet.parameters(): param.requires_grad=False → resnet.fc=nn.Linear(512,2) (마지막 레이어만 교체, 2분류) → "특성 추출기로 사전 훈련된 가중치를 고정하고 마지막만 학습" 방식 이해 → 적은 데이터로도 높은 성능 이유 노트 정리'
+      ]},
+      { topic: 'RNN과 시계열', tasks: [
+        '① RNN 원리: hₜ=tanh(Wₓxₜ+Wₕhₜ₋₁+b) → 이전 은닉상태(hₜ₋₁)가 현재 입력(xₜ)과 합쳐짐. 문장 "나는 밥을 먹었다" → 단어 순서대로 RNN에 입력 → 각 시점의 h가 문맥 정보 누적 → 이 흐름을 화살표로 그려 노트 작성',
+        '② PyTorch RNN으로 사인파 예측: t=np.linspace(0,8*np.pi,500); data=np.sin(t) → 과거 20개 시점으로 다음 값 예측하는 RNN 구현: nn.RNN(input_size=1,hidden_size=32,num_layers=1,batch_first=True) → 100 epoch 훈련 후 예측값 vs 실제 사인파 plt 비교'
+      ]},
+      { topic: 'LSTM', tasks: [
+        '① LSTM 4개 게이트 정리: forget gate (이전 기억 얼마나 잊을지) / input gate (새 정보 얼마나 저장할지) / cell state (장기 기억) / output gate (다음 h로 무엇을 내보낼지) → 각 게이트 수식 노트에 쓰고 직관적 의미 한 줄 설명',
+        '② RNN → LSTM으로 교체 후 성능 비교: 위 사인파 예측 코드에서 nn.RNN → nn.LSTM 으로 변경 (hidden_state 외 cell_state 추가 필요) → 같은 100 epoch 훈련 후 최종 loss 비교 → 시계열이 길수록 LSTM이 유리한 이유 확인'
+      ]},
+      { topic: 'Transformer와 Attention', tasks: [
+        '① YouTube "Illustrated Transformer" 또는 "Attention is All You Need 논문 요약" 영상 20분 시청 → Q(Query), K(Key), V(Value) 개념 노트: Attention(Q,K,V) = softmax(QKᵀ/√d_k)V → 이 식에서 QKᵀ가 "얼마나 관련 있는지 점수"임을 이해',
+        '② 간단한 Self-Attention 구현: import torch.nn.functional as F → Q=K=V=torch.randn(4,8) (4단어, 8차원 임베딩) → scores=Q@K.T/np.sqrt(8) → weights=F.softmax(scores,dim=-1) → output=weights@V → print("Attention weights:\\n",weights.detach().numpy().round(2)) → 각 단어가 다른 단어에 얼마나 주목하는지 확인'
+      ]},
+      { topic: 'NLP 기초', tasks: [
+        '① 텍스트 전처리 파이프라인 직접 구현: text="자연어 처리를 공부하면 AI 대학원 준비가 즐거워집니다" → 1)토큰화: text.split() → 2)단어사전 생성: vocab={w:i for i,w in enumerate(set(tokens))} → 3)정수 인코딩: [vocab[w] for w in tokens] → 4)패딩 개념 설명',
+        '② Word2Vec 직관 실습: from gensim.models import Word2Vec (또는 사전학습 임베딩 로드) → sentences=[["나는","밥을","먹었다"],["나는","공부를","했다"]] → model=Word2Vec(sentences,vector_size=10,min_count=1,epochs=100) → model.wv.similarity("나는","밥을") vs model.wv.similarity("나는","나는") 비교 → 유사 단어 끼리 코사인 유사도가 높음 확인'
+      ]},
+      { topic: '생성 모델과 최신 트렌드', tasks: [
+        '① GAN 개념 정리: Generator(노이즈→가짜 데이터 생성) vs Discriminator(진짜/가짜 구별) → 두 모델이 경쟁하며 발전 → 실제 코드 없이 구조 그림으로 이해 → VAE: 입력을 잠재공간(μ,σ)으로 압축 후 재생성 → GAN vs VAE 차이를 표로 비교',
+        '② LLM 트렌드 파악: GPT(Decoder-only, 생성 특화) / BERT(Encoder-only, 이해 특화) / T5(Encoder-Decoder) 차이 노트 정리 → Hugging Face 사이트 방문해 "bert-base-uncased" 모델 카드 읽기 → from transformers import pipeline; classifier=pipeline("sentiment-analysis"); print(classifier("I love studying AI!")) 실행'
+      ]},
+      { topic: '딥러닝 종합 복습', tasks: [
+        '① 딥러닝 아키텍처 비교표 작성: CNN(이미지, 공간 특성) / RNN-LSTM(시계열, 순차 데이터) / Transformer(텍스트, 장거리 의존성) → 각각 대표 논문명, 주요 적용 분야, 핵심 아이디어 한 줄 정리',
+        '② 나만의 미니 프로젝트 기획서 작성: 주제 선택(이미지분류/감성분석/시계열예측 중 1개) → 사용할 데이터셋 → 모델 구조 → 평가 지표 → 예상 어려움 → A4 1페이지 분량으로 노트/Docs에 작성 (대학원 첫 프로젝트 씨앗!)'
+      ]},
+    ]
+  },
+  {
+    id: 5, name: '복습 & 대학원 준비', emoji: '🎓', color: '#ec4899',
+    startDate: '2026-08-26', endDate: '2026-08-31',
+    days: [
+      { topic: '전체 복습 1: Python & 수학', tasks: [
+        '① Python 자가 점검: Colab에서 새 노트북 열고 힌트 없이 다음 구현 → ①리스트 컴프리헨션으로 소수 구하기 ②딕셔너리로 단어 빈도 세기 ③NumPy로 3×3 행렬 역행렬+고유값 계산 ④Pandas로 CSV 로드 후 그룹별 통계 → 막힌 부분이 바로 약점',
+        '② 수학 공식 속성 점검: ①벡터 내적 공식과 의미 ②행렬 곱 조건 ③역행렬 존재 조건 ④편미분 계산 ⑤경사하강법 업데이트 수식 → 각각 5초 내로 떠오르지 않으면 해당 날짜 Colab 노트 다시 풀기'
+      ]},
+      { topic: '전체 복습 2: 통계 & ML', tasks: [
+        '① ML 개념 구술 테스트 (혼자 소리 내어): 결정트리는 어떻게 분기 기준을 정하는가? / 랜덤포레스트와 배깅의 관계는? / SVM의 마진이란? / k-fold CV를 왜 쓰는가? / L1·L2 정규화 차이 → 막히는 질문은 답 노트에 정리',
+        '② scikit-learn 원스톱 파이프라인 실습: from sklearn.pipeline import Pipeline → Pipeline([("scaler",StandardScaler()),("model",RandomForestClassifier())]) → breast cancer 데이터에 cross_val_score(cv=5) → 단 10줄로 전처리+모델+교차검증 완성 → 파이프라인 장점(데이터 누수 방지) 노트 정리'
+      ]},
+      { topic: '전체 복습 3: 딥러닝', tasks: [
+        '① 딥러닝 개념 구술: ReLU를 쓰는 이유는? / CNN에서 풀링의 역할은? / LSTM이 RNN보다 나은 이유는? / Attention이 RNN보다 나은 이유는? / 전이학습이 효과적인 이유는? → 각 질문에 2~3문장 답 노트 작성',
+        '② arxiv.org/abs/1706.03762 (Attention is All You Need) Abstract + Introduction만 영어로 읽기 → 모르는 단어 10개 정리 → 핵심 주장 한 문장으로 요약 → 논문 읽는 순서(Abstract→Conclusion→Introduction→실험→본문) 학습'
+      ]},
+      { topic: 'AI 윤리와 연구 방향', tasks: [
+        '① AI 윤리 5대 이슈 정리: ①알고리즘 편향(인종·성별 차별) ②설명가능성(XAI) ③개인정보보호 ④자동화에 의한 일자리 ⑤AI 안전성 → 각 이슈에 대한 실제 사례 1개씩 조사 (구글 검색) → 연세대 AI 대학원에서 연구되는 분야와 연결',
+        '② 대학원 연구 주제 아이디어 3개 작성: 주제명 / 해결하고자 하는 문제 / 왜 AI가 필요한가 / 관련 키워드 (ML/NLP/CV/강화학습 등) → 이 중 가장 관심 있는 1개 선택 후 관련 논문 제목 3개 구글 스칼라에서 검색'
+      ]},
+      { topic: '포트폴리오 정리', tasks: [
+        '① Google Drive에 "AI 대학원 준비 포트폴리오" 폴더 생성 → 하위 폴더: 01_Python기초 / 02_수학 / 03_통계 / 04_머신러닝 / 05_딥러닝 → 각 단계별 Colab 노트북(.ipynb) 정리해서 업로드 → 파일명 형식: "D14_Python복습_성적관리프로그램.ipynb"',
+        '② 학습 회고 작성 (Notion 또는 Google Docs): ①3개월 전 나 vs 지금 나 비교 ②가장 어려웠던 개념 Top 3 ③가장 흥미로웠던 개념 Top 3 ④대학원에서 더 깊이 파고 싶은 분야 ⑤앞으로 계속 유지할 공부 습관 → A4 1~2페이지 분량'
+      ]},
+      { topic: 'D-1 최종 준비 🎓', tasks: [
+        '① 수업 준비 체크리스트: ①수강 신청 완료 확인 ②교수님 이메일/연구실 위치 확인 ③첫 주 수업 교재/자료 확인 ④학교 포털 사이트 로그인 ⑤노트북 파이썬 환경(Colab 또는 로컬 Anaconda) 최종 점검 ⑥학교 도서관/WiFi 이용 방법 확인',
+        '② 🥳 3개월 완주 자축! Colab에서 지난 76일의 학습을 돌아보는 마지막 코드 실행: import datetime; start=datetime.date(2026,6,17); today=datetime.date.today(); print(f"학습 기간: {(today-start).days}일, 완료 과제: 152개, 수고했습니다! 내일부터 AI 대학원생! 🎓")'
+      ]},
+    ]
+  }
+];
+
+// Build flat schedule array
+const SCHEDULE = [];
+PHASES.forEach(phase => {
+  const start = parseDate(phase.startDate);
+  phase.days.forEach((day, i) => {
+    const d = new Date(start);
+    d.setDate(d.getDate() + i);
+    SCHEDULE.push({
+      dateStr: formatDate(d),
+      phaseId: phase.id,
+      phaseName: phase.name,
+      phaseEmoji: phase.emoji,
+      phaseColor: phase.color,
+      topic: day.topic,
+      tasks: day.tasks,
+      isWeekend: d.getDay() === 0 || d.getDay() === 6
+    });
+  });
+});
+
+// =========================================================
+// STATE
+// =========================================================
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('aiStudyState') || '{}'); } catch(e) { return {}; }
+}
+function saveState(s) {
+  localStorage.setItem('aiStudyState', JSON.stringify(s));
+}
+
+let state = loadState();
+if (!state.completed) state.completed = {}; // { "2026-06-17_0": true, ... }
+if (!state.totalXP) state.totalXP = 0;
+if (!state.streak) state.streak = { current: 0, longest: 0, lastDate: null };
+if (!state.level) state.level = 1;
+
+const XP_PER_TASK = 15;
+const XP_PER_LEVEL = 100;
+
+// =========================================================
+// HELPERS
+// =========================================================
+function parseDate(s) {
+  const [y,m,d] = s.split('-').map(Number);
+  return new Date(y, m-1, d);
+}
+function formatDate(d) {
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function todayStr() { return formatDate(new Date()); }
+
+function getScheduleForDate(dateStr) {
+  return SCHEDULE.find(s => s.dateStr === dateStr) || null;
+}
+
+function isTaskDone(dateStr, taskIdx) {
+  return !!state.completed[`${dateStr}_${taskIdx}`];
+}
+
+function getDayCompletionStatus(dateStr) {
+  const sched = getScheduleForDate(dateStr);
+  if (!sched) return 'none';
+  const total = sched.tasks.length;
+  const done = sched.tasks.filter((_, i) => isTaskDone(dateStr, i)).length;
+  if (done === 0) return 'none';
+  if (done === total) return 'full';
+  return 'partial';
+}
+
+function recalcStats() {
+  // Recalculate total XP from scratch
+  let xp = 0;
+  Object.keys(state.completed).forEach(k => {
+    if (state.completed[k]) xp += XP_PER_TASK;
+  });
+  state.totalXP = xp;
+  state.level = Math.floor(xp / XP_PER_LEVEL) + 1;
+
+  // Streak
+  let streak = 0;
+  let d = new Date();
+  while (true) {
+    const ds = formatDate(d);
+    const sched = getScheduleForDate(ds);
+    if (!sched) { d.setDate(d.getDate()-1); if (streak > 0 || ds < '2026-06-17') break; continue; }
+    const status = getDayCompletionStatus(ds);
+    if (status === 'full') { streak++; d.setDate(d.getDate()-1); }
+    else if (ds === todayStr() && status === 'partial') { d.setDate(d.getDate()-1); }
+    else break;
+    if (streak > 200) break;
+  }
+  state.streak.current = streak;
+  state.streak.longest = Math.max(state.streak.longest || 0, streak);
+
+  saveState(state);
+  updateHeader();
+}
+
+function updateHeader() {
+  const xp = state.totalXP;
+  const level = state.level;
+  const xpInLevel = xp % XP_PER_LEVEL;
+  const xpForNext = XP_PER_LEVEL;
+  const pct = (xpInLevel / xpForNext * 100).toFixed(1);
+
+  document.getElementById('streakVal').textContent = state.streak.current;
+  document.getElementById('totalXP').textContent = xp.toLocaleString();
+  document.getElementById('levelVal').textContent = level;
+
+  const totalBricks = Object.values(state.completed).filter(Boolean).length;
+  document.getElementById('brickCount').textContent = totalBricks;
+
+  document.getElementById('xpBar').style.width = pct + '%';
+  document.getElementById('xpCurrent').textContent = `Lv.${level} • ${xpInLevel} XP`;
+  document.getElementById('xpNext').textContent = `다음 레벨까지 ${xpForNext - xpInLevel} XP`;
+
+  const today = new Date();
+  const grad = new Date('2026-09-01');
+  const diff = Math.ceil((grad - today) / (1000*60*60*24));
+  const weekdays = ['일','월','화','수','목','금','토'];
+  document.getElementById('todayLabel').textContent =
+    `${today.getFullYear()}. ${today.getMonth()+1}. ${today.getDate()}. (${weekdays[today.getDay()]})`;
+  document.getElementById('dDayLabel').textContent =
+    diff > 0 ? `개강까지 D-${diff}` : diff === 0 ? '🎓 오늘 개강!' : '대학원 재학 중 🎓';
+}
+
+// =========================================================
+// PAGE: TODAY
+// =========================================================
+function renderToday() {
+  const today = todayStr();
+  const sched = getScheduleForDate(today);
+  const container = document.getElementById('todayContent');
+
+  const weekdays = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  const d = new Date();
+
+  let html = `<div class="today-date">${d.getMonth()+1}월 ${d.getDate()}일 ${weekdays[d.getDay()]}</div>`;
+
+  if (!sched) {
+    // Check if before or after schedule
+    if (today < '2026-06-17') {
+      html += `<div class="no-tasks">
+        <div style="font-size:48px;margin-bottom:12px">📅</div>
+        <div style="font-size:16px;font-weight:700;margin-bottom:8px">아직 시작 전이에요!</div>
+        <div style="font-size:13px;color:var(--text-muted)">학습 시작일: 2026년 6월 17일</div>
+      </div>`;
+    } else {
+      html += `<div class="all-done">
+        <div class="icon">🎓</div>
+        <h3>3개월 완주!</h3>
+        <p>모든 커리큘럼을 완료했습니다. 대학원 파이팅!</p>
+      </div>`;
+    }
+    container.innerHTML = html;
+    renderBrickWall();
+    return;
+  }
+
+  const phase = PHASES[sched.phaseId];
+  const allDone = sched.tasks.every((_, i) => isTaskDone(today, i));
+
+  html += `<div class="today-phase" style="background:${phase.color}22;color:${phase.color};border:1px solid ${phase.color}44;">
+    ${sched.phaseEmoji} ${sched.phaseName}
+    ${sched.isWeekend ? '<span class="tag tag-weekend">주말</span>' : ''}
+  </div>`;
+
+  if (allDone) {
+    html += `<div class="all-done">
+      <div class="icon">🌟</div>
+      <h3>오늘 할 일 완료!</h3>
+      <p>정말 잘 했어요! 내일도 화이팅 💪</p>
+    </div>`;
+  }
+
+  html += `<div class="section-title">📖 오늘의 주제: ${sched.topic}</div>`;
+
+  sched.tasks.forEach((task, i) => {
+    const done = isTaskDone(today, i);
+    html += `<div class="task-card ${done ? 'done' : ''}" id="task_${i}">
+      <div class="task-row" onclick="toggleTask('${today}', ${i})">
+        <div class="task-check"></div>
+        <div class="task-text">${task}</div>
+        <div class="task-xp">${done ? '✓' : ''} +${XP_PER_TASK}XP</div>
+      </div>
+    </div>`;
+  });
+
+  container.innerHTML = html;
+  renderBrickWall();
+}
+
+function toggleTask(dateStr, taskIdx) {
+  const key = `${dateStr}_${taskIdx}`;
+  const wasDone = !!state.completed[key];
+  const prevLevel = state.level;
+
+  if (wasDone) {
+    delete state.completed[key];
+  } else {
+    state.completed[key] = true;
+    showXPPopup();
+  }
+
+  recalcStats();
+
+  // Level up?
+  if (!wasDone && state.level > prevLevel) {
+    showLevelUp(state.level);
+  }
+
+  renderToday();
+  renderBrickWall();
+}
+
+function showXPPopup() {
+  const popup = document.createElement('div');
+  popup.className = 'xp-popup';
+  popup.textContent = `+${XP_PER_TASK} XP`;
+  popup.style.left = (Math.random() * 60 + 20) + '%';
+  popup.style.top = '40%';
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 1000);
+}
+
+function showLevelUp(level) {
+  const banner = document.createElement('div');
+  banner.className = 'level-up-banner';
+  banner.innerHTML = `🎉 레벨 업!<br><span style="font-size:40px">Lv. ${level}</span>`;
+  document.body.appendChild(banner);
+  setTimeout(() => banner.remove(), 2000);
+}
+
+// =========================================================
+// BRICK WALL
+// =========================================================
+const BRICK_COLORS = ['#10b981','#3b82f6','#f59e0b','#ef4444','#8b5cf6','#ec4899'];
+
+function renderBrickWall() {
+  const wall = document.getElementById('brickWall');
+  const label = document.getElementById('brickLabel');
+  const total = Object.values(state.completed).filter(Boolean).length;
+
+  if (total === 0) {
+    wall.innerHTML = '<div class="brick-empty">📝 첫 번째 과제를 완료하면 벽돌이 아래부터 쌓입니다!</div>';
+    label.textContent = '';
+    return;
+  }
+
+  // Build ordered bricks (curriculum order)
+  const orderedKeys = SCHEDULE.flatMap(s =>
+    s.tasks.map((_, i) => `${s.dateStr}_${i}`)
+  ).filter(k => state.completed[k]);
+
+  const BRICKS_PER_ROW = 9;
+  // Group into rows
+  const rows = [];
+  for (let i = 0; i < orderedKeys.length; i += BRICKS_PER_ROW) {
+    rows.push(orderedKeys.slice(i, i + BRICKS_PER_ROW));
+  }
+
+  // Render rows — flex-direction:column-reverse makes row[0] appear at bottom
+  let html = rows.map((row, rowIdx) => {
+    const isOffset = rowIdx % 2 === 1;
+    const bricks = row.map(key => {
+      const dateStr = key.split('_')[0];
+      const sched = getScheduleForDate(dateStr);
+      const color = sched ? PHASES[sched.phaseId].color : '#6366f1';
+      return `<div class="brick placed" style="background:${color};"></div>`;
+    }).join('');
+    return `<div class="brick-row${isOffset ? ' offset' : ''}">${bricks}</div>`;
+  }).join('');
+
+  wall.innerHTML = html;
+  const totalPossible = SCHEDULE.reduce((a,s)=>a+s.tasks.length,0);
+  const rows_completed = Math.floor(total / BRICKS_PER_ROW);
+  label.textContent = `🧱 ${total}개 벽돌 완성 (${rows_completed}층 + ${total % BRICKS_PER_ROW}개) / 전체 ${totalPossible}개`;
+}
+
+// =========================================================
+// PAGE: CALENDAR
+// =========================================================
+function renderCalendar() {
+  const container = document.getElementById('calendarContent');
+  const months = [
+    { year: 2026, month: 6, label: '6월 (June)' },
+    { year: 2026, month: 7, label: '7월 (July)' },
+    { year: 2026, month: 8, label: '8월 (August)' },
+  ];
+
+  const today = todayStr();
+  let html = '';
+
+  months.forEach(({ year, month, label }) => {
+    html += `<div class="month-title">${label}</div>`;
+    html += `<div class="calendar-grid">`;
+    ['일','월','화','수','목','금','토'].forEach(d => {
+      html += `<div class="cal-header">${d}</div>`;
+    });
+
+    const firstDay = new Date(year, month - 1, 1).getDay();
+    const daysInMonth = new Date(year, month, 0).getDate();
+
+    for (let i = 0; i < firstDay; i++) {
+      html += `<div class="cal-day empty"></div>`;
+    }
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const ds = `${year}-${String(month).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const sched = getScheduleForDate(ds);
+      const isToday = ds === today;
+      const isFuture = ds > today;
+
+      let cls = 'future';
+      let dot = '';
+
+      if (!sched) {
+        cls = isFuture ? 'future' : 'skipped';
+      } else if (isToday) {
+        cls = 'today';
+        const status = getDayCompletionStatus(ds);
+        if (status === 'full') cls = 'done';
+        else if (status === 'partial') cls += ' partial';
+      } else if (isFuture) {
+        cls = 'future';
+      } else {
+        const status = getDayCompletionStatus(ds);
+        if (status === 'full') cls = 'done';
+        else if (status === 'partial') cls = 'partial';
+        else cls = 'skipped';
+      }
+
+      if (sched && !isFuture) dot = '<div class="day-dot"></div>';
+
+      html += `<div class="cal-day ${cls}">
+        <div class="day-num">${day}</div>
+        ${dot}
+      </div>`;
+    }
+
+    html += `</div>`;
+  });
+
+  // Legend
+  html += `<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:16px;font-size:12px;color:var(--text-muted);">
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--success);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>완료</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--warning);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>일부 완료</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--surface2);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>미완료</span>
+    <span><span style="display:inline-block;width:10px;height:10px;background:var(--accent);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>오늘</span>
+  </div>`;
+
+  container.innerHTML = html;
+}
+
+// =========================================================
+// PAGE: CURRICULUM
+// =========================================================
+function renderCurriculum() {
+  const container = document.getElementById('curriculumContent');
+  const today = todayStr();
+
+  let html = `<div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">
+    6/17 ~ 8/31 · 76일 · 152개 학습 과제
+  </div>`;
+
+  PHASES.forEach(phase => {
+    const startDate = parseDate(phase.startDate);
+    const totalTasks = phase.days.reduce((a, d) => a + d.tasks.length, 0);
+    let doneTasks = 0;
+
+    phase.days.forEach((day, di) => {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + di);
+      const ds = formatDate(d);
+      day.tasks.forEach((_, ti) => {
+        if (isTaskDone(ds, ti)) doneTasks++;
+      });
+    });
+
+    const pct = totalTasks ? Math.round(doneTasks / totalTasks * 100) : 0;
+
+    html += `<div class="phase-card">
+      <div class="phase-header" onclick="togglePhase(${phase.id})">
+        <div class="phase-emoji">${phase.emoji}</div>
+        <div class="phase-info">
+          <div class="phase-name">${phase.name}</div>
+          <div class="phase-date">${phase.startDate} ~ ${phase.endDate}</div>
+          <div class="phase-progress-bar">
+            <div class="phase-progress-fill" style="width:${pct}%;background:${phase.color}"></div>
+          </div>
+        </div>
+        <div class="phase-pct" style="color:${phase.color}">${pct}%</div>
+        <div class="phase-toggle" id="toggle_${phase.id}">▼</div>
+      </div>
+      <div class="phase-days" id="phase_days_${phase.id}">`;
+
+    phase.days.forEach((day, di) => {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + di);
+      const ds = formatDate(d);
+      const isToday = ds === today;
+      const isFuture = ds > today;
+      const allDone = day.tasks.every((_, ti) => isTaskDone(ds, ti));
+      const anyDone = day.tasks.some((_, ti) => isTaskDone(ds, ti));
+      const doneCnt = day.tasks.filter((_, ti) => isTaskDone(ds, ti)).length;
+
+      let badgeCls = allDone ? 'done' : isToday ? 'today' : '';
+
+      const mn = d.getMonth() + 1;
+      const dd = d.getDate();
+      const wd = ['일','월','화','수','목','금','토'][d.getDay()];
+      const dayId = `curriculum_${phase.id}_${di}`;
+
+      let statusIcon = '';
+      if (allDone) statusIcon = ' ✅';
+      else if (anyDone) statusIcon = ' 🔄';
+      else if (isToday) statusIcon = ' 👈';
+      else if (isFuture) statusIcon = ' 📅';
+
+      html += `<div class="phase-day-item" onclick="toggleDayTasks('${dayId}')">
+        <div class="day-num-badge ${badgeCls}">${di + 1}</div>
+        <div class="phase-day-topic">
+          <div style="font-weight:${isToday?'700':'400'};color:${isToday?'var(--accent)':isFuture?'var(--text-muted)':'inherit'}">${day.topic}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">${doneCnt}/${day.tasks.length}개 완료</div>
+        </div>
+        <div class="phase-day-date" style="color:${isFuture&&!isToday?'var(--text-muted)':'inherit'}">${mn}/${dd} (${wd})${statusIcon}</div>
+        <div class="day-expand-icon" id="expicon_${dayId}">▼</div>
+      </div>
+      <div class="day-tasks" id="${dayId}">`;
+
+      day.tasks.forEach((task, ti) => {
+        const done = isTaskDone(ds, ti);
+        html += `<div class="day-task-row" onclick="event.stopPropagation();toggleTaskFromCurriculum('${ds}',${ti},'${dayId}')">
+          <div class="day-task-check ${done?'checked':''}"></div>
+          <div class="day-task-text ${done?'checked':''}">${task}</div>
+          <div class="day-task-xp">+${XP_PER_TASK}XP</div>
+        </div>`;
+      });
+
+      html += `</div>`;
+    });
+
+    html += `</div></div>`;
+  });
+
+  container.innerHTML = html;
+}
+
+function togglePhase(id) {
+  const days = document.getElementById(`phase_days_${id}`);
+  const tog = document.getElementById(`toggle_${id}`);
+  days.classList.toggle('open');
+  tog.classList.toggle('open');
+}
+
+function toggleDayTasks(dayId) {
+  const el = document.getElementById(dayId);
+  const icon = document.getElementById(`expicon_${dayId}`);
+  if (!el) return;
+  el.classList.toggle('open');
+  if (icon) icon.classList.toggle('open');
+}
+
+function toggleTaskFromCurriculum(dateStr, taskIdx, dayId) {
+  const prevLevel = state.level;
+  const key = `${dateStr}_${taskIdx}`;
+  const wasDone = !!state.completed[key];
+  if (wasDone) {
+    delete state.completed[key];
+  } else {
+    state.completed[key] = true;
+    showXPPopup();
+  }
+  recalcStats();
+  if (!wasDone && state.level > prevLevel) showLevelUp(state.level);
+
+  // Re-render the task row in place
+  const tasksEl = document.getElementById(dayId);
+  if (!tasksEl) return;
+  const rows = tasksEl.querySelectorAll('.day-task-row');
+  const row = rows[taskIdx];
+  if (!row) return;
+  const check = row.querySelector('.day-task-check');
+  const text = row.querySelector('.day-task-text');
+  const nowDone = !!state.completed[key];
+  check.className = `day-task-check ${nowDone?'checked':''}`;
+  text.className = `day-task-text ${nowDone?'checked':''}`;
+
+  // Update badge and done count in the parent item
+  const item = tasksEl.previousElementSibling;
+  if (item) {
+    const sched = getScheduleForDate(dateStr);
+    if (sched) {
+      const doneCnt = sched.tasks.filter((_, i) => isTaskDone(dateStr, i)).length;
+      const allDone = doneCnt === sched.tasks.length;
+      const badge = item.querySelector('.day-num-badge');
+      if (badge) badge.className = `day-num-badge ${allDone?'done':dateStr===todayStr()?'today':''}`;
+      const subtext = item.querySelectorAll('.phase-day-topic div')[1];
+      if (subtext) subtext.textContent = `${doneCnt}/${sched.tasks.length}개 완료`;
+    }
+  }
+
+  // Re-render today tab if visible
+  if (document.getElementById('page-today').classList.contains('active')) {
+    renderToday();
+    renderBrickWall();
+  } else {
+    renderBrickWall();
+  }
+}
+
+// =========================================================
+// PAGE: PROGRESS
+// =========================================================
+function renderProgress() {
+  const container = document.getElementById('progressContent');
+  const today = todayStr();
+  const totalBricks = Object.values(state.completed).filter(Boolean).length;
+  const totalPossibleSoFar = SCHEDULE
+    .filter(s => s.dateStr <= today)
+    .reduce((a, s) => a + s.tasks.length, 0);
+  const overallPct = totalPossibleSoFar ? Math.round(totalBricks / totalPossibleSoFar * 100) : 0;
+
+  let html = `
+  <div class="grid-2">
+    <div class="mini-card">
+      <div class="big-number" style="color:var(--accent)">${state.totalXP.toLocaleString()}</div>
+      <div class="big-label">총 XP</div>
+    </div>
+    <div class="mini-card">
+      <div class="big-number" style="color:var(--warning)">Lv.${state.level}</div>
+      <div class="big-label">현재 레벨</div>
+    </div>
+    <div class="mini-card">
+      <div class="big-number" style="color:var(--success)">${state.streak.current}</div>
+      <div class="big-label">🔥 연속 완료일</div>
+    </div>
+    <div class="mini-card">
+      <div class="big-number" style="color:var(--p5)">${state.streak.longest || 0}</div>
+      <div class="big-label">최장 연속 기록</div>
+    </div>
+  </div>
+
+  <div class="progress-card">
+    <h3>📊 지금까지 수행률 (오늘까지 기준)</h3>
+    <div class="prog-row">
+      <div class="prog-label">전체 진행도</div>
+      <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${overallPct}%;background:var(--accent)"></div></div>
+      <div class="prog-pct">${overallPct}%</div>
+    </div>
+  </div>
+
+  <div class="progress-card">
+    <h3>📚 단계별 진행 현황</h3>`;
+
+  PHASES.forEach(phase => {
+    const startDate = parseDate(phase.startDate);
+    const totalTasks = phase.days.reduce((a, d) => a + d.tasks.length, 0);
+    let doneTasks = 0;
+    phase.days.forEach((day, di) => {
+      const d = new Date(startDate);
+      d.setDate(d.getDate() + di);
+      const ds = formatDate(d);
+      day.tasks.forEach((_, ti) => {
+        if (isTaskDone(ds, ti)) doneTasks++;
+      });
+    });
+    const pct = totalTasks ? Math.round(doneTasks / totalTasks * 100) : 0;
+
+    html += `<div class="prog-row">
+      <div class="prog-label">${phase.emoji} ${phase.name.split(' ')[0]}</div>
+      <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${pct}%;background:${phase.color}"></div></div>
+      <div class="prog-pct" style="color:${phase.color}">${pct}%</div>
+    </div>`;
+  });
+
+  html += `</div>
+
+  <div class="progress-card">
+    <h3>🏆 달성 뱃지</h3>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">`;
+
+  const badges = [
+    { icon: '🌱', name: '첫 걸음', condition: totalBricks >= 1 },
+    { icon: '🔥', name: '3일 연속', condition: state.streak.current >= 3 || state.streak.longest >= 3 },
+    { icon: '⚡', name: '100 XP', condition: state.totalXP >= 100 },
+    { icon: '🧱', name: '10 벽돌', condition: totalBricks >= 10 },
+    { icon: '📅', name: '7일 연속', condition: state.streak.longest >= 7 },
+    { icon: '🏅', name: '500 XP', condition: state.totalXP >= 500 },
+    { icon: '🐍', name: 'Python 완료', condition: isPhaseDone(0) },
+    { icon: '📐', name: '수학 완료', condition: isPhaseDone(1) },
+    { icon: '📊', name: '통계 완료', condition: isPhaseDone(2) },
+    { icon: '🤖', name: 'ML 완료', condition: isPhaseDone(3) },
+    { icon: '🧠', name: '딥러닝 완료', condition: isPhaseDone(4) },
+    { icon: '🎓', name: '전 과정 완료', condition: isPhaseDone(5) },
+  ];
+
+  badges.forEach(b => {
+    html += `<div style="
+      display:flex;align-items:center;gap:6px;
+      padding:6px 12px;border-radius:20px;font-size:12px;
+      background:${b.condition ? 'rgba(99,102,241,0.2)' : 'var(--surface2)'};
+      border:1px solid ${b.condition ? 'rgba(99,102,241,0.5)' : 'var(--border)'};
+      color:${b.condition ? 'var(--text)' : 'var(--text-muted)'};
+      filter:${b.condition ? 'none' : 'grayscale(1) opacity(0.5)'};
+    ">
+      ${b.icon} ${b.name}
+    </div>`;
+  });
+
+  html += `</div></div>`;
+
+  container.innerHTML = html;
+}
+
+function isPhaseDone(phaseId) {
+  const phase = PHASES[phaseId];
+  const start = parseDate(phase.startDate);
+  return phase.days.every((day, di) => {
+    const d = new Date(start);
+    d.setDate(d.getDate() + di);
+    const ds = formatDate(d);
+    return day.tasks.every((_, ti) => isTaskDone(ds, ti));
+  });
+}
+
+// =========================================================
+// NAV
+// =========================================================
+const pages = ['today', 'calendar', 'curriculum', 'progress'];
+function showPage(name) {
+  pages.forEach(p => {
+    document.getElementById(`page-${p}`).classList.remove('active');
+  });
+  document.querySelectorAll('.nav-btn').forEach((b, i) => {
+    b.classList.toggle('active', pages[i] === name);
+  });
+  document.getElementById(`page-${name}`).classList.add('active');
+
+  if (name === 'today') renderToday();
+  if (name === 'calendar') renderCalendar();
+  if (name === 'curriculum') renderCurriculum();
+  if (name === 'progress') renderProgress();
+}
+
+// =========================================================
+// INIT
+// =========================================================
+recalcStats();
+renderToday();
+renderBrickWall();
+</script>
+</body>
+</html>
