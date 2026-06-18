@@ -305,6 +305,34 @@
   .day-task-text.checked { text-decoration: line-through; opacity: 0.5; }
   .day-task-xp { font-size: 10px; font-weight: 700; color: var(--accent); flex-shrink: 0; padding: 2px 6px; background: rgba(99,102,241,0.12); border-radius: 8px; }
 
+  /* Memo */
+  .memo-box { margin: 2px 0 6px 30px; }
+  .memo-label { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; display: flex; align-items: center; gap: 4px; }
+  .memo-input {
+    width: 100%;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: inherit;
+    padding: 8px 10px;
+    line-height: 1.5;
+    resize: vertical;
+    min-height: 38px;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+  }
+  .memo-input:focus { outline: none; border-color: var(--accent); }
+  .memo-input::placeholder { color: #5b6b82; }
+  .memo-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 3px; }
+  .memo-count { font-size: 10px; color: var(--text-muted); }
+  .memo-count.over { color: var(--danger); }
+  .memo-saved { font-size: 10px; color: var(--success); opacity: 0; transition: opacity 0.2s; }
+  .memo-saved.show { opacity: 1; }
+  /* Today tab memo (slightly bigger) */
+  .task-card .memo-box { margin: 10px 0 0 34px; }
+
   /* Calendar */
   .calendar-grid {
     display: grid;
@@ -953,6 +981,7 @@ function saveState(s) {
 
 let state = loadState();
 if (!state.completed) state.completed = {}; // { "2026-06-17_0": true, ... }
+if (!state.notes) state.notes = {}; // { "2026-06-17_0": "메모 내용", ... }
 if (!state.totalXP) state.totalXP = 0;
 if (!state.streak) state.streak = { current: 0, longest: 0, lastDate: null };
 if (!state.level) state.level = 1;
@@ -971,6 +1000,55 @@ function formatDate(d) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 function todayStr() { return formatDate(new Date()); }
+
+const MEMO_MAX = 100;
+function getNote(dateStr, taskIdx) {
+  return state.notes[`${dateStr}_${taskIdx}`] || '';
+}
+function escapeHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+// Returns memo HTML block for a task
+function memoBlockHtml(dateStr, taskIdx) {
+  const note = getNote(dateStr, taskIdx);
+  const id = `memo_${dateStr}_${taskIdx}`;
+  const over = note.length > MEMO_MAX;
+  return `<div class="memo-box" onclick="event.stopPropagation();">
+    <div class="memo-label">📝 메모 (기록·설명 작성)</div>
+    <textarea class="memo-input" id="${id}" maxlength="${MEMO_MAX}"
+      placeholder="여기에 학습 기록·메모를 남기세요 (최대 ${MEMO_MAX}자)"
+      oninput="onMemoInput('${dateStr}', ${taskIdx})">${escapeHtml(note)}</textarea>
+    <div class="memo-footer">
+      <span class="memo-count ${over?'over':''}" id="${id}_cnt">${note.length} / ${MEMO_MAX}자</span>
+      <span class="memo-saved" id="${id}_saved">✓ 저장됨</span>
+    </div>
+  </div>`;
+}
+let memoSaveTimers = {};
+function onMemoInput(dateStr, taskIdx) {
+  const key = `${dateStr}_${taskIdx}`;
+  const id = `memo_${key}`;
+  const ta = document.getElementById(id);
+  if (!ta) return;
+  const val = ta.value;
+  // Update counter
+  const cnt = document.getElementById(`${id}_cnt`);
+  if (cnt) {
+    cnt.textContent = `${val.length} / ${MEMO_MAX}자`;
+    cnt.className = `memo-count ${val.length >= MEMO_MAX ? 'over' : ''}`;
+  }
+  // Save to state
+  if (val.trim()) state.notes[key] = val;
+  else delete state.notes[key];
+  saveState(state);
+  // Show "saved" indicator (debounced)
+  const saved = document.getElementById(`${id}_saved`);
+  if (saved) {
+    clearTimeout(memoSaveTimers[id]);
+    saved.classList.add('show');
+    memoSaveTimers[id] = setTimeout(() => saved.classList.remove('show'), 1200);
+  }
+}
 
 function getScheduleForDate(dateStr) {
   return SCHEDULE.find(s => s.dateStr === dateStr) || null;
@@ -1106,6 +1184,7 @@ function renderToday() {
         <div class="task-text">${task}</div>
         <div class="task-xp">${done ? '✓' : ''} +${XP_PER_TASK}XP</div>
       </div>
+      ${memoBlockHtml(today, i)}
     </div>`;
   });
 
@@ -1255,7 +1334,8 @@ function renderCalendar() {
 
       if (sched && !isFuture) dot = '<div class="day-dot"></div>';
 
-      html += `<div class="cal-day ${cls}">
+      const clickAttr = sched ? ` onclick="openDayFromCalendar('${ds}')" style="cursor:pointer"` : '';
+      html += `<div class="cal-day ${cls}"${clickAttr}>
         <div class="day-num">${day}</div>
         ${dot}
       </div>`;
@@ -1357,7 +1437,8 @@ function renderCurriculum() {
           <div class="day-task-check ${done?'checked':''}"></div>
           <div class="day-task-text ${done?'checked':''}">${task}</div>
           <div class="day-task-xp">+${XP_PER_TASK}XP</div>
-        </div>`;
+        </div>
+        ${memoBlockHtml(ds, ti)}`;
       });
 
       html += `</div>`;
@@ -1382,6 +1463,52 @@ function toggleDayTasks(dayId) {
   if (!el) return;
   el.classList.toggle('open');
   if (icon) icon.classList.toggle('open');
+}
+
+// Calendar day click → jump to curriculum, open that phase & day, scroll to it
+function openDayFromCalendar(dateStr) {
+  const sched = getScheduleForDate(dateStr);
+  if (!sched) return;
+  // Find day index within its phase
+  const phase = PHASES[sched.phaseId];
+  const start = parseDate(phase.startDate);
+  let di = -1;
+  phase.days.forEach((_, idx) => {
+    const d = new Date(start); d.setDate(d.getDate() + idx);
+    if (formatDate(d) === dateStr) di = idx;
+  });
+  if (di < 0) return;
+  const dayId = `curriculum_${phase.id}_${di}`;
+
+  showPage('curriculum'); // re-renders curriculum
+
+  setTimeout(() => {
+    // Open the phase accordion
+    const phaseDays = document.getElementById(`phase_days_${phase.id}`);
+    const tog = document.getElementById(`toggle_${phase.id}`);
+    if (phaseDays && !phaseDays.classList.contains('open')) {
+      phaseDays.classList.add('open');
+      if (tog) tog.classList.add('open');
+    }
+    // Open the day's task list
+    const dayEl = document.getElementById(dayId);
+    const icon = document.getElementById(`expicon_${dayId}`);
+    if (dayEl && !dayEl.classList.contains('open')) {
+      dayEl.classList.add('open');
+      if (icon) icon.classList.add('open');
+    }
+    // Scroll into view + brief highlight
+    if (dayEl) {
+      const item = dayEl.previousElementSibling;
+      const target = item || dayEl;
+      target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      if (item) {
+        item.style.transition = 'background 0.3s';
+        item.style.background = 'rgba(99,102,241,0.25)';
+        setTimeout(() => { item.style.background = ''; }, 1500);
+      }
+    }
+  }, 80);
 }
 
 function toggleTaskFromCurriculum(dateStr, taskIdx, dayId) {
