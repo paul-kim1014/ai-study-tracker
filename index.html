@@ -333,6 +333,82 @@
   /* Today tab memo (slightly bigger) */
   .task-card .memo-box { margin: 10px 0 0 34px; }
 
+  /* Code Runner */
+  .code-section { margin-top: 24px; }
+  .code-runner {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+  }
+  .code-toolbar { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+  .chip-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-size: 11px;
+    font-family: inherit;
+    padding: 5px 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chip-btn:active { transform: scale(0.94); }
+  .chip-btn.chip-clear { margin-left: auto; color: var(--text-muted); }
+  .code-input {
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 150px;
+    background: #0b1120;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: #e2e8f0;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 13px;
+    line-height: 1.55;
+    padding: 12px;
+    resize: vertical;
+    tab-size: 4;
+  }
+  .code-input:focus { outline: none; border-color: var(--accent); }
+  .run-btn {
+    width: 100%;
+    margin-top: 10px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: inherit;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .run-btn:active { transform: scale(0.98); }
+  .run-btn:disabled { opacity: 0.6; cursor: wait; }
+  .code-output-wrap { margin-top: 12px; }
+  .code-output-label { font-size: 11px; color: var(--text-muted); margin-bottom: 5px; }
+  .code-output {
+    background: #0b1120;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: #cbd5e1;
+    font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+    font-size: 12.5px;
+    line-height: 1.55;
+    padding: 12px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    min-height: 40px;
+    max-height: 320px;
+    overflow-y: auto;
+  }
+  .code-output.error { color: #fca5a5; }
+  .code-plot { margin-top: 10px; }
+  .code-plot img { max-width: 100%; border-radius: 8px; border: 1px solid var(--border); background: white; }
+  .code-note { font-size: 10.5px; color: var(--text-muted); margin-top: 10px; line-height: 1.5; }
+
   /* Calendar */
   .calendar-grid {
     display: grid;
@@ -602,6 +678,28 @@
 
 <div id="page-today" class="page active">
   <div id="todayContent"></div>
+
+  <div class="code-section">
+    <div class="section-title">💻 코드 실행기 <span style="font-size:11px;font-weight:400;color:var(--text-muted)">(Python · 휴대폰에서 바로 실행)</span></div>
+    <div class="code-runner">
+      <div class="code-toolbar">
+        <button class="chip-btn" onclick="insertSnippet('import numpy as np\n')">numpy</button>
+        <button class="chip-btn" onclick="insertSnippet('import pandas as pd\n')">pandas</button>
+        <button class="chip-btn" onclick="insertSnippet('import matplotlib.pyplot as plt\n')">matplotlib</button>
+        <button class="chip-btn" onclick="insertSnippet('print()')">print</button>
+        <button class="chip-btn chip-clear" onclick="clearCode()">🗑️ 지우기</button>
+      </div>
+      <textarea id="codeInput" class="code-input" spellcheck="false" autocapitalize="off" autocorrect="off"
+        placeholder="여기에 파이썬 코드를 입력하세요.&#10;예) print('Hello AI!')&#10;&#10;▶ 실행 버튼을 누르면 결과가 아래에 나옵니다."></textarea>
+      <button id="runBtn" class="run-btn" onclick="runCode()">▶ 실행</button>
+      <div class="code-output-wrap">
+        <div class="code-output-label">📤 실행 결과</div>
+        <div id="codeOutput" class="code-output">코드를 입력하고 ▶ 실행을 눌러보세요.</div>
+        <div id="codePlot" class="code-plot"></div>
+      </div>
+      <div class="code-note">💡 NumPy·Pandas·Matplotlib 지원. PyTorch 등 무거운 딥러닝(Phase 5)은 Google Colab을 사용하세요. 첫 실행 시 파이썬 로딩에 10~20초 걸립니다.</div>
+    </div>
+  </div>
 
   <div class="brick-section">
     <div class="section-title">🧱 나의 벽</div>
@@ -982,6 +1080,7 @@ function saveState(s) {
 let state = loadState();
 if (!state.completed) state.completed = {}; // { "2026-06-17_0": true, ... }
 if (!state.notes) state.notes = {}; // { "2026-06-17_0": "메모 내용", ... }
+if (!state.code) state.code = {}; // { "2026-06-17": "작성한 코드", ... }
 if (!state.totalXP) state.totalXP = 0;
 if (!state.streak) state.streak = { current: 0, longest: 0, lastDate: null };
 if (!state.level) state.level = 1;
@@ -1694,11 +1793,170 @@ function showPage(name) {
 }
 
 // =========================================================
+// CODE RUNNER (Pyodide)
+// =========================================================
+let pyodideInstance = null;
+let pyodideLoading = null;
+
+function insertSnippet(text) {
+  const ta = document.getElementById('codeInput');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  ta.value = ta.value.slice(0, start) + text + ta.value.slice(end);
+  ta.selectionStart = ta.selectionEnd = start + text.length;
+  ta.focus();
+  saveCode();
+}
+
+function clearCode() {
+  const ta = document.getElementById('codeInput');
+  ta.value = '';
+  saveCode();
+  document.getElementById('codeOutput').textContent = '코드를 입력하고 ▶ 실행을 눌러보세요.';
+  document.getElementById('codeOutput').className = 'code-output';
+  document.getElementById('codePlot').innerHTML = '';
+  ta.focus();
+}
+
+function saveCode() {
+  const ta = document.getElementById('codeInput');
+  if (!ta) return;
+  state.code = state.code || {};
+  state.code[todayStr()] = ta.value;
+  saveState(state);
+}
+
+function loadSavedCode() {
+  const ta = document.getElementById('codeInput');
+  if (!ta) return;
+  const saved = (state.code || {})[todayStr()];
+  if (saved) ta.value = saved;
+  ta.addEventListener('input', saveCode);
+}
+
+async function ensurePyodide(outEl) {
+  if (pyodideInstance) return pyodideInstance;
+  if (pyodideLoading) return pyodideLoading;
+  pyodideLoading = (async () => {
+    outEl.className = 'code-output';
+    outEl.textContent = '🐍 파이썬 환경을 처음 불러오는 중입니다... (10~20초)';
+    // Load pyodide script
+    if (!window.loadPyodide) {
+      await new Promise((resolve, reject) => {
+        const s = document.createElement('script');
+        s.src = 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js';
+        s.onload = resolve;
+        s.onerror = () => reject(new Error('파이썬 로더를 불러오지 못했습니다. 인터넷 연결을 확인하세요.'));
+        document.head.appendChild(s);
+      });
+    }
+    const py = await loadPyodide({ indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.26.2/full/' });
+    pyodideInstance = py;
+    return py;
+  })();
+  return pyodideLoading;
+}
+
+async function runCode() {
+  const ta = document.getElementById('codeInput');
+  const outEl = document.getElementById('codeOutput');
+  const plotEl = document.getElementById('codePlot');
+  const btn = document.getElementById('runBtn');
+  const code = ta.value;
+  if (!code.trim()) { outEl.className = 'code-output'; outEl.textContent = '코드를 먼저 입력하세요.'; return; }
+
+  plotEl.innerHTML = '';
+  btn.disabled = true;
+  const origBtn = btn.textContent;
+  btn.textContent = '⏳ 실행 중...';
+
+  try {
+    const py = await ensurePyodide(outEl);
+
+    // Auto-install needed packages mentioned in code
+    outEl.className = 'code-output';
+    const pkgs = [];
+    if (/\b(numpy|np)\b/.test(code) || /import numpy/.test(code)) pkgs.push('numpy');
+    if (/\bpandas\b|import pandas/.test(code)) pkgs.push('pandas');
+    if (/matplotlib|pyplot|plt\./.test(code)) pkgs.push('matplotlib');
+    if (/\bscipy\b|import scipy/.test(code)) pkgs.push('scipy');
+    if (/sklearn|scikit/.test(code)) pkgs.push('scikit-learn');
+    if (pkgs.length) {
+      outEl.textContent = `📦 라이브러리 준비 중: ${[...new Set(pkgs)].join(', ')} ...`;
+      await py.loadPackage([...new Set(pkgs)]);
+    }
+
+    // Set up stdout capture and matplotlib Agg backend
+    const hasPlot = /matplotlib|pyplot|plt\./.test(code);
+    let prelude = `
+import sys, io
+_stdout_buf = io.StringIO()
+sys.stdout = _stdout_buf
+sys.stderr = _stdout_buf
+`;
+    if (hasPlot) {
+      prelude += `
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+try:
+    plt.rcParams['font.family'] = 'DejaVu Sans'
+    plt.rcParams['axes.unicode_minus'] = False
+except: pass
+`;
+    }
+
+    await py.runPythonAsync(prelude);
+    await py.runPythonAsync(code);
+
+    // Grab plot if any
+    let imgB64 = null;
+    if (hasPlot) {
+      imgB64 = await py.runPythonAsync(`
+import base64, io as _io
+_figs = [plt.figure(n) for n in plt.get_fignums()]
+_out = None
+if _figs:
+    _b = _io.BytesIO()
+    _figs[-1].savefig(_b, format='png', dpi=110, bbox_inches='tight')
+    _b.seek(0)
+    _out = base64.b64encode(_b.read()).decode()
+    plt.close('all')
+_out
+`);
+    }
+
+    const captured = await py.runPythonAsync('_stdout_buf.getvalue()');
+    outEl.className = 'code-output';
+    outEl.textContent = captured && captured.length ? captured : '✅ 실행 완료 (출력 없음)';
+
+    if (imgB64) {
+      plotEl.innerHTML = `<img src="data:image/png;base64,${imgB64}" alt="그래프 결과">`;
+    }
+  } catch (err) {
+    outEl.className = 'code-output error';
+    let msg = '';
+    // The Python traceback is captured in our redirected stderr buffer
+    try {
+      if (pyodideInstance) msg = await pyodideInstance.runPythonAsync('_stdout_buf.getvalue()');
+    } catch (e2) { /* ignore */ }
+    if (!msg || !msg.trim()) msg = (err && err.message) ? err.message : String(err);
+    // Show the most relevant tail of the traceback (the error line is last)
+    const lines = msg.split('\n').filter(l => l.trim());
+    const shown = lines.length > 10 ? lines.slice(-10) : lines;
+    outEl.textContent = '❌ 오류:\n' + shown.join('\n');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = origBtn;
+  }
+}
+
+// =========================================================
 // INIT
 // =========================================================
 recalcStats();
 renderToday();
 renderBrickWall();
+loadSavedCode();
 </script>
 </body>
 </html>
