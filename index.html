@@ -352,6 +352,37 @@
     font-size: 12px;
     color: #93c5fd;
   }
+  .concept-links { margin-top: 12px; padding-top: 12px; border-top: 1px solid rgba(99,102,241,0.2); }
+  .concept-links-title { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 7px; }
+  .concept-link {
+    display: block;
+    font-size: 12.5px;
+    color: #93c5fd;
+    text-decoration: none;
+    padding: 8px 11px;
+    background: rgba(0,0,0,0.25);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    margin-bottom: 6px;
+    transition: all 0.15s;
+  }
+  .concept-link:active { background: rgba(99,102,241,0.2); }
+  .concept-link:last-child { margin-bottom: 0; }
+  /* Curriculum concept block */
+  .cur-concept {
+    background: rgba(99,102,241,0.08);
+    border: 1px solid rgba(99,102,241,0.2);
+    border-radius: 8px;
+    padding: 11px 12px;
+    margin: 4px 0 10px;
+  }
+  .cur-concept-title { font-size: 11px; font-weight: 700; color: var(--accent); margin-bottom: 5px; }
+  .cur-concept-body { font-size: 12px; line-height: 1.7; color: var(--text); }
+  .cur-concept-body b { color: #c7d2fe; }
+  .cur-concept-body code { background: rgba(0,0,0,0.35); padding: 1px 5px; border-radius: 4px; font-family: 'SF Mono','Menlo',monospace; font-size: 11px; color: #93c5fd; }
+  .cur-concept-link { display: inline-block; font-size: 11px; color: #93c5fd; text-decoration: none; margin-top: 7px; margin-right: 12px; }
+  /* Calendar day concept */
+  .cal-day .day-topic { font-size: 7.5px; line-height: 1.1; color: inherit; opacity: 0.85; margin-top: 2px; text-align: center; word-break: keep-all; padding: 0 1px; }
 
   /* Quiz Card */
   .quiz-card {
@@ -502,18 +533,21 @@
     font-weight: 700;
   }
   .cal-day {
-    aspect-ratio: 1;
+    min-height: 52px;
     border-radius: 6px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     font-size: 10px;
     border: 1px solid transparent;
     cursor: default;
     transition: all 0.2s;
     position: relative;
+    padding: 4px 1px 3px;
+    overflow: hidden;
   }
+  .cal-day.empty { min-height: 0; }
   .cal-day.empty { background: none; }
   .cal-day.future { background: var(--surface); color: var(--text-muted); }
   .cal-day.today { border-color: var(--accent); background: rgba(99,102,241,0.15); font-weight: 700; }
@@ -1230,6 +1264,68 @@ const LESSONS = {
   }
 };
 
+// =========================================================
+// LESSON_LINKS: 개념별 추가 학습 자료 (영상/읽기)
+// =========================================================
+const LESSON_LINKS = {
+  '2026-06-17': [
+    { label: '📺 점프 투 파이썬 무료 강의 (영상)', url: 'https://www.youtube.com/results?search_query=점프투파이썬+변수+자료형+강의' },
+    { label: '📖 점프 투 파이썬 (위키독스 무료 책)', url: 'https://wikidocs.net/11' }
+  ],
+  '2026-06-18': [
+    { label: '📺 파이썬 자료형/연산자 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+자료형+변환+연산자+강의' },
+    { label: '📖 숫자형·연산자 (점프 투 파이썬)', url: 'https://wikidocs.net/12' }
+  ],
+  '2026-06-19': [
+    { label: '📺 파이썬 조건문(if) 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+조건문+if+강의' },
+    { label: '📖 if문 (점프 투 파이썬)', url: 'https://wikidocs.net/20' }
+  ],
+  '2026-06-20': [
+    { label: '📺 파이썬 반복문(for/while) 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+반복문+for+while+강의' },
+    { label: '📖 while문·for문 (점프 투 파이썬)', url: 'https://wikidocs.net/22' }
+  ],
+  '2026-06-21': [
+    { label: '📺 파이썬 리스트 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+리스트+list+강의' },
+    { label: '📖 리스트 자료형 (점프 투 파이썬)', url: 'https://wikidocs.net/14' }
+  ],
+  '2026-06-22': [
+    { label: '📺 파이썬 딕셔너리 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+딕셔너리+dictionary+강의' },
+    { label: '📖 딕셔너리 자료형 (점프 투 파이썬)', url: 'https://wikidocs.net/16' }
+  ],
+  '2026-06-23': [
+    { label: '📺 파이썬 함수 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+함수+def+강의' },
+    { label: '📖 함수 (점프 투 파이썬)', url: 'https://wikidocs.net/24' }
+  ],
+  '2026-06-24': [
+    { label: '📺 파이썬 문자열 다루기 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+문자열+다루기+강의' },
+    { label: '📖 문자열 자료형 (점프 투 파이썬)', url: 'https://wikidocs.net/13' }
+  ],
+  '2026-06-25': [
+    { label: '📺 파이썬 파일입출력·예외처리 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+파일입출력+예외처리+강의' },
+    { label: '📖 예외 처리 (점프 투 파이썬)', url: 'https://wikidocs.net/30' }
+  ],
+  '2026-06-26': [
+    { label: '📺 NumPy 입문 강의 (영상)', url: 'https://www.youtube.com/results?search_query=넘파이+numpy+입문+강의' },
+    { label: '📖 NumPy 한글 튜토리얼', url: 'https://wikidocs.net/book/5719' }
+  ],
+  '2026-06-27': [
+    { label: '📺 Pandas 입문 강의 (영상)', url: 'https://www.youtube.com/results?search_query=판다스+pandas+입문+강의' },
+    { label: '📖 Pandas 한글 튜토리얼 (위키독스)', url: 'https://wikidocs.net/book/4639' }
+  ],
+  '2026-06-28': [
+    { label: '📺 Matplotlib 시각화 강의 (영상)', url: 'https://www.youtube.com/results?search_query=matplotlib+시각화+강의' },
+    { label: '📖 Matplotlib 한글 튜토리얼', url: 'https://wikidocs.net/book/5011' }
+  ],
+  '2026-06-29': [
+    { label: '📺 파이썬 기초 종합 정리 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+기초+총정리+강의' },
+    { label: '📖 점프 투 파이썬 (전체 목차)', url: 'https://wikidocs.net/book/1' }
+  ],
+  '2026-06-30': [
+    { label: '📺 파이썬 미니 프로젝트 강의 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+데이터분석+미니+프로젝트+강의' },
+    { label: '📖 데이터 분석 입문 (위키독스)', url: 'https://wikidocs.net/book/4639' }
+  ]
+};
+
 // Build flat schedule array
 const SCHEDULE = [];
 PHASES.forEach(phase => {
@@ -1283,7 +1379,7 @@ function formatDate(d) {
 }
 function todayStr() { return formatDate(new Date()); }
 
-const MEMO_MAX = 100;
+const MEMO_MAX = 200;
 function getNote(dateStr, taskIdx) {
   return state.notes[`${dateStr}_${taskIdx}`] || '';
 }
@@ -1461,10 +1557,21 @@ function renderToday() {
   const lesson = (typeof LESSONS !== 'undefined') ? LESSONS[today] : null;
 
   if (lesson) {
-    // 1) 개념 설명 카드
+    // 1) 개념 설명 카드 (+ 추가 학습 자료 링크)
+    const links = (typeof LESSON_LINKS !== 'undefined') ? LESSON_LINKS[today] : null;
+    let linksHtml = '';
+    if (links && links.length) {
+      linksHtml = `<div class="concept-links">
+        <div class="concept-links-title">🔗 더 자세히 학습하기</div>`;
+      links.forEach(l => {
+        linksHtml += `<a class="concept-link" href="${l.url}" target="_blank" rel="noopener">${l.label}</a>`;
+      });
+      linksHtml += `</div>`;
+    }
     html += `<div class="concept-card">
       <div class="concept-title">💡 개념 이해하기</div>
       <div class="concept-body">${lesson.concept}</div>
+      ${linksHtml}
     </div>`;
 
     // 2) 미션 퀴즈
@@ -1731,12 +1838,18 @@ function renderCalendar() {
         else cls = 'skipped';
       }
 
-      if (sched && !isFuture) dot = '<div class="day-dot"></div>';
+      let topicLabel = '';
+      if (sched) {
+        // 괄호 내용 제거 후 간략화
+        let t = sched.topic.replace(/\s*\(.*?\)\s*/g, '').trim();
+        if (t.length > 11) t = t.slice(0, 10) + '…';
+        topicLabel = `<div class="day-topic">${t}</div>`;
+      }
 
       const clickAttr = sched ? ` onclick="openDayFromCalendar('${ds}')" style="cursor:pointer"` : '';
       html += `<div class="cal-day ${cls}"${clickAttr}>
         <div class="day-num">${day}</div>
-        ${dot}
+        ${topicLabel}
       </div>`;
     }
 
@@ -1829,6 +1942,20 @@ function renderCurriculum() {
         <div class="day-expand-icon" id="expicon_${dayId}">▼</div>
       </div>
       <div class="day-tasks" id="${dayId}">`;
+
+      // 개념 이해하기 (해당 일자 강의가 있으면)
+      const curLesson = (typeof LESSONS !== 'undefined') ? LESSONS[ds] : null;
+      if (curLesson) {
+        let curLinks = '';
+        const cl = (typeof LESSON_LINKS !== 'undefined') ? LESSON_LINKS[ds] : null;
+        if (cl && cl.length) {
+          curLinks = cl.map(l => `<a class="cur-concept-link" href="${l.url}" target="_blank" rel="noopener" onclick="event.stopPropagation();">${l.label}</a>`).join('');
+        }
+        html += `<div class="cur-concept">
+          <div class="cur-concept-title">💡 개념 이해하기</div>
+          <div class="cur-concept-body">${curLesson.concept}${curLinks ? '<br>' + curLinks : ''}</div>
+        </div>`;
+      }
 
       day.tasks.forEach((task, ti) => {
         const done = isTaskDone(ds, ti);
