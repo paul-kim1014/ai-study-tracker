@@ -893,6 +893,10 @@ const PHASES = [
         '① 지금까지 학습 내용을 Google Colab 노트에 섹션별 정리: "변수/자료형" → "제어문" → "함수" → "NumPy" → "Pandas" → "Matplotlib" 각 항목에 핵심 코드 1~2줄씩 주석과 함께 작성 (총 1개 노트북에)',
         '② 미니 프로젝트: 학생 5명 데이터(이름, 국어, 수학, 영어 점수)를 DataFrame으로 만들고 → 과목별 평균 계산 → 총점 기준 석차 매기기 → 과목별 평균 막대 그래프 출력하는 코드를 30줄 이내로 작성'
       ]},
+      { topic: '미니 프로젝트 완성', tasks: [
+        '① 어제 만든 성적 관리 코드를 함수로 리팩터링: get_average(scores), get_rank(df) 처럼 기능을 함수로 분리 → 주석을 달아 가독성 높이기 → try-except로 잘못된 입력(빈 값 등) 처리 추가',
+        '② 최종 산출물: 데이터 입력 → 평균·석차 계산(Pandas) → 막대그래프(Matplotlib) 전체 흐름을 하나의 Colab 노트로 완성하고, 결과 그래프를 캡처해 포트폴리오 폴더에 저장'
+      ]},
     ]
   },
   {
@@ -943,9 +947,13 @@ const PHASES = [
         '① f(x,y)=x²+y² 의 그래디언트 ∇f=[∂f/∂x, ∂f/∂y]=[2x, 2y] → (x,y)=(1,1)에서 그래디언트=[2,2] 손계산 → 이 방향이 f 값이 가장 빠르게 증가하는 방향임을 이해 → 경사하강법은 이 반대 방향(-∇f)으로 이동',
         '② 2변수 경사하강법: f(x,y)=(x-1)²+(y-2)² 최솟값 찾기 → x=5.0; y=5.0; lr=0.2 → for i in range(15): gx=2*(x-1); gy=2*(y-2); x-=lr*gx; y-=lr*gy; print(f"x={x:.3f}, y={y:.3f}") → (1.0, 2.0)으로 수렴 확인'
       ]},
-      { topic: '선형변환과 SVD/PCA 직관', tasks: [
+      { topic: '선형변환과 기하학적 의미', tasks: [
         '① 선형변환: A=np.array([[2,0],[0,0.5]]) (x축 2배 확대, y축 0.5배 축소) → 점 v=np.array([1,1]) 에 A@v 적용 → matplotlib으로 변환 전(파란점)과 후(빨간점) 시각화',
-        '② PCA 직관 실습: from sklearn.decomposition import PCA → np.random.seed(42); X=np.random.randn(100,2)@np.array([[3,1],[1,1]]) 로 상관된 2D 데이터 생성 → pca=PCA(n_components=2); pca.fit(X) → print("설명 분산 비율:", pca.explained_variance_ratio_) → 첫 번째 성분이 데이터 분산의 몇%를 설명하는지 확인'
+        '② 회전 변환 행렬 R=[[cosθ,-sinθ],[sinθ,cosθ]] 를 θ=90°로 만들어 점 [1,0]에 적용 → 결과가 [0,1]로 90도 회전하는지 확인 → 행렬이 \'공간을 바꾸는 함수\'임을 체감'
+      ]},
+      { topic: 'SVD와 PCA', tasks: [
+        '① PCA 실습: from sklearn.decomposition import PCA → np.random.seed(42); X=np.random.randn(100,2)@np.array([[3,1],[1,1]]) 로 상관된 2D 데이터 생성 → pca=PCA(n_components=2); pca.fit(X) → print("설명 분산 비율:", pca.explained_variance_ratio_) → 첫 성분이 분산의 몇%를 설명하는지 확인',
+        '② SVD 실습: A=np.array([[1,2],[3,4],[5,6]]) → U,S,Vt=np.linalg.svd(A) → print(S) 로 특이값 확인 → SVD가 PCA·이미지 압축·추천 시스템의 공통 원리임을 노트 정리'
       ]},
       { topic: '수학 기초 종합 복습', tasks: [
         '① 핵심 공식 정리 (노트 또는 Colab 마크다운): 벡터내적/행렬곱 조건/역행렬 존재조건/고유값 공식/미분기본공식/경사하강법 업데이트 규칙 → 각 공식 옆에 "딥러닝에서 쓰이는 곳" 한 줄 메모',
@@ -1004,6 +1012,10 @@ const PHASES = [
       { topic: '정보이론과 교차 엔트로피', tasks: [
         '① 엔트로피 계산: 동전이 앞면만 나오는 경우(p=1) → H=-1×log2(1)=0 bits (불확실성 없음). 공정한 동전(p=0.5) → H=-0.5×log2(0.5)-0.5×log2(0.5)=1 bit (불확실성 최대). 4면체(p=0.25씩) → H=2 bits → import numpy as np; def entropy(probs): return -np.sum([p*np.log2(p) for p in probs if p>0]) 함수 작성 후 위 3가지 확인',
         '② 교차 엔트로피 손실: 실제 레이블 y=[1,0,0] (고양이), 모델 예측 ŷ=[0.7,0.2,0.1] → CE = -Σyᵢ×log(ŷᵢ) = -1×log(0.7) = 0.357 → 잘못된 예측 ŷ=[0.1,0.7,0.2] 이면 CE=-log(0.1)=2.303으로 훨씬 큰 패널티 → Python으로 계산 확인'
+      ]},
+      { topic: '베이지안 추론', tasks: [
+        '① 베이지안 흐름 정리: 사전확률(처음 믿음) → 우도(새 증거) → 사후확률(갱신된 믿음). 동전이 공정한지 의심하는 상황에서 앞면이 8/10 나왔을 때 믿음이 어떻게 갱신되는지 글로 설명',
+        '② 나이브 베이즈 실습: from sklearn.naive_bayes import GaussianNB → from sklearn.datasets import load_iris → 데이터 학습 후 정확도 출력 → "단어/특성이 주어졌을 때 클래스 확률"을 계산하는 원리를 노트에 정리'
       ]},
       { topic: '통계 종합 복습', tasks: [
         '① Kaggle에서 타이타닉 데이터셋 다운로드 (또는 pd.read_csv로 URL 직접 로드) → df.info(), df.isnull().sum() 결측치 확인 → df["Survived"].value_counts() 생존율 → df.groupby("Pclass")["Survived"].mean() 객실 등급별 생존율 비교',
@@ -1067,6 +1079,10 @@ const PHASES = [
         '① ML 알고리즘 비교표 작성 (노트/Colab 마크다운): 알고리즘명 / 유형(분류·회귀·클러스터링) / 핵심 개념 한 줄 / 장점 / 단점 / 주요 하이퍼파라미터 → 선형회귀, 로지스틱회귀, 결정트리, 랜덤포레스트, SVM, KNN, K-means 7가지',
         '② Kaggle "Titanic - Machine Learning from Disaster" 대회 페이지 방문 → 데이터 다운로드 → 전처리(결측치/범주형 인코딩) → RandomForestClassifier 또는 LogisticRegression 으로 예측 → submission.csv 생성 후 제출 시도 🏆'
       ]},
+      { topic: '캐글 도전', tasks: [
+        '① Kaggle 타이타닉 데이터 전처리 완성: 결측치 채우기(Age=중앙값, Embarked=최빈값), 범주형 인코딩(Sex·Embarked를 숫자로), 불필요 컬럼 제거(Name·Ticket 등) → 깨끗한 학습용 X, y 만들기',
+        '② RandomForestClassifier로 학습 → 교차검증으로 성능 확인 → 테스트셋 예측 후 submission.csv 생성 → Kaggle에 제출하고 점수(정확도) 확인 🏆 → 점수를 높이려면 무엇을 바꿔야 할지 노트 정리'
+      ]},
     ]
   },
   {
@@ -1117,9 +1133,13 @@ const PHASES = [
         '① 텍스트 전처리 파이프라인 직접 구현: text="자연어 처리를 공부하면 AI 대학원 준비가 즐거워집니다" → 1)토큰화: text.split() → 2)단어사전 생성: vocab={w:i for i,w in enumerate(set(tokens))} → 3)정수 인코딩: [vocab[w] for w in tokens] → 4)패딩 개념 설명',
         '② Word2Vec 직관 실습: from gensim.models import Word2Vec (또는 사전학습 임베딩 로드) → sentences=[["나는","밥을","먹었다"],["나는","공부를","했다"]] → model=Word2Vec(sentences,vector_size=10,min_count=1,epochs=100) → model.wv.similarity("나는","밥을") vs model.wv.similarity("나는","나는") 비교 → 유사 단어 끼리 코사인 유사도가 높음 확인'
       ]},
-      { topic: '생성 모델과 최신 트렌드', tasks: [
+      { topic: '생성 모델 (GAN·VAE)', tasks: [
         '① GAN 개념 정리: Generator(노이즈→가짜 데이터 생성) vs Discriminator(진짜/가짜 구별) → 두 모델이 경쟁하며 발전 → 실제 코드 없이 구조 그림으로 이해 → VAE: 입력을 잠재공간(μ,σ)으로 압축 후 재생성 → GAN vs VAE 차이를 표로 비교',
-        '② LLM 트렌드 파악: GPT(Decoder-only, 생성 특화) / BERT(Encoder-only, 이해 특화) / T5(Encoder-Decoder) 차이 노트 정리 → Hugging Face 사이트 방문해 "bert-base-uncased" 모델 카드 읽기 → from transformers import pipeline; classifier=pipeline("sentiment-analysis"); print(classifier("I love studying AI!")) 실행'
+        '② Hugging Face 사전학습 모델 체험: from transformers import pipeline; classifier=pipeline("sentiment-analysis"); print(classifier("I love studying AI!")) 실행 → 생성 모델이 이미지·텍스트 생성 AI(ChatGPT·이미지생성)의 뿌리임을 노트 정리'
+      ]},
+      { topic: '최신 AI 트렌드 (LLM)', tasks: [
+        '① GPT(Decoder-only, 생성 특화) / BERT(Encoder-only, 이해 특화) / T5(Encoder-Decoder)의 차이를 표로 정리 → 셋 모두 Transformer 가족임을 확인 → LLM(거대 언어모델)이 방대한 텍스트로 학습해 사람처럼 답하는 큰 그림 이해',
+        '② Hugging Face 사이트에서 "bert-base-uncased" 모델 카드 읽기 → pipeline("fill-mask")로 빈칸 채우기 모델 체험 → 관심 가는 AI 응용 분야(번역·요약·챗봇 등) 1개를 정해 관련 모델을 검색해보기'
       ]},
       { topic: '딥러닝 종합 복습', tasks: [
         '① 딥러닝 아키텍처 비교표 작성: CNN(이미지, 공간 특성) / RNN-LSTM(시계열, 순차 데이터) / Transformer(텍스트, 장거리 의존성) → 각각 대표 논문명, 주요 적용 분야, 핵심 아이디어 한 줄 정리',
@@ -1349,10 +1369,10 @@ const LESSONS = {
     ]
   },
   '2026-07-13': {
-    concept: '<b>수학 종합 복습</b>의 날! 지금까지 배운 <b>벡터·행렬·행렬곱·역행렬·고유값</b>(선형대수)과 <b>미분·편미분·연쇄법칙·경사하강법</b>(미적분)은 모두 \'머신러닝이 데이터를 다루고 학습하는 언어\'예요. <b>실습 ①</b>에서 핵심 공식을 한 장으로 정리하고, <b>실습 ②</b>에서 임의 행렬로 전치·역행렬·고유값을 모두 계산하고 경사하강법으로 최저점을 찾아봅니다. 이 도구들이 다음 단계(통계·ML)의 토대가 돼요.',
+    concept: '<b>SVD(특이값 분해)</b>는 어떤 행렬이든 \'회전 × 늘이기 × 회전\' 세 단계로 쪼개는 만능 도구예요. 이미지 압축, 추천 시스템(넷플릭스), 노이즈 제거에 두루 쓰이죠. <b>실습 ①</b>에서 <code>PCA</code>로 상관된 2D 데이터의 \'설명 분산 비율\'을 확인하고, <b>실습 ②</b>에서 <code>np.linalg.svd</code>로 특이값을 직접 구합니다. PCA는 사실 SVD/고유분해로 구현되는 한 가족 — 둘 다 데이터를 핵심 방향으로 압축하는 <b>차원 축소</b>의 대표 도구예요.',
     quiz: [
-      { type: 'mc', q: '신경망 학습(가중치 업데이트)에 가장 직접적으로 쓰이는 수학 개념은?', options: ['경사하강법(미분/그래디언트)', '소수 판별', '로마 숫자', '집합론'], answer: 0, explain: '손실의 그래디언트를 따라 가중치를 업데이트하는 경사하강법이 학습의 핵심이에요.' },
-      { type: 'ox', q: '선형대수(행렬)와 미적분(미분)은 머신러닝의 가장 기본이 되는 수학이다.', answer: true, explain: '맞아요! 데이터 표현은 행렬, 학습은 미분. 이 둘이 ML의 두 기둥이에요.' }
+      { type: 'ox', q: 'SVD는 이미지 압축이나 추천 시스템 같은 실제 응용에 활용된다.', answer: true, explain: '맞아요! 큰 행렬을 핵심 성분으로 줄이는 SVD는 압축·추천·노이즈 제거에 쓰여요.' },
+      { type: 'mc', q: 'PCA와 SVD의 공통 목적으로 옳은 것은?', options: ['데이터를 핵심 방향으로 압축(차원 축소)', '데이터를 무작위로 섞기', '결측치를 채우기', '데이터를 2배로 늘리기'], answer: 0, explain: '둘 다 분산이 큰 핵심 방향만 남겨 차원을 줄여요. PCA의 내부 계산이 바로 SVD예요.' }
     ]
   },
   '2026-07-14': {
@@ -1449,10 +1469,10 @@ const LESSONS = {
     ]
   },
   '2026-07-27': {
-    concept: '<b>통계 종합 복습</b>의 날! 기술통계·확률·분포·추론·검정·상관·회귀를 모두 실전에 써봐요. <b>실습 ①·②</b>에서 <b>타이타닉 데이터셋</b>으로 <b>EDA(탐색적 데이터 분석)</b>를 합니다 — 결측치 확인, 생존율 비교(객실 등급·성별별), 상관 히트맵을 그려 \'데이터가 들려주는 이야기\'를 찾아요. EDA는 모든 머신러닝 프로젝트의 첫 단추예요. (앞서 배운 베이즈 정리를 확장한 <b>베이지안 추론</b>·나이브 베이즈 분류기도 함께 떠올려 정리해 두면 좋아요.)',
+    concept: '<b>베이지안 추론</b>은 \'믿음을 데이터로 업데이트\'하는 사고방식이에요: <b>사전확률(처음 믿음) → 우도(새 증거) → 사후확률(갱신된 믿음)</b>. <b>실습 ①</b>에서 이 흐름을 정리하고, <b>실습 ②</b>에서 <b>나이브 베이즈 분류기</b>를 직접 학습시켜 봅니다. \'단어/특성이 주어졌을 때 클래스일 확률\'을 계산하는 이 분류기는 단순하지만 스팸 필터·텍스트 분류에서 강력해요.',
     quiz: [
-      { type: 'short', q: '데이터를 본격 분석하기 전, 그래프와 요약통계로 데이터의 특징·패턴·이상치를 살펴보는 과정의 영문 약자는? (3글자)', answers: ['EDA', 'eda'], hint: '탐색적 데이터 분석...', explain: '정답은 EDA(Exploratory Data Analysis)! 모델링 전 데이터를 이해하는 단계예요.' },
-      { type: 'ox', q: 'EDA에서는 결측치 확인, 분포 시각화, 변수 간 상관관계 분석 등을 수행한다.', answer: true, explain: '맞아요! 데이터의 형태와 관계를 먼저 파악해야 좋은 모델을 만들 수 있어요.' }
+      { type: 'mc', q: '베이지안 추론의 흐름 순서로 옳은 것은?', options: ['사전확률 → 우도(증거) → 사후확률', '사후확률 → 사전확률 → 우도', '우도 → 사후확률 → 사전확률', '순서는 상관없다'], answer: 0, explain: '처음 믿음(사전)에 새 증거(우도)를 곱해 갱신된 믿음(사후)을 얻어요.' },
+      { type: 'ox', q: '나이브 베이즈 분류기는 스팸 메일 분류 같은 텍스트 분류에 효과적이다.', answer: true, explain: '맞아요! 단순하지만 텍스트(단어 등장 확률) 분류에서 잘 작동해요.' }
     ]
   },
   '2026-07-28': {
@@ -1649,10 +1669,10 @@ const LESSONS = {
     ]
   },
   '2026-08-24': {
-    concept: '<b>딥러닝 종합 복습</b>의 날! <b>CNN</b>(이미지)·<b>RNN/LSTM</b>(시계열·순차)·<b>Transformer</b>(텍스트·장거리 관계)의 강점을 한 표로 비교해요. <b>실습 ①</b>에서 아키텍처 비교표를 만들고, <b>실습 ②</b>에서 \'나만의 미니 프로젝트\'(이미지 분류/감성 분석/시계열 예측 중 택1)를 기획합니다 — 대학원 첫 연구의 씨앗이 될 수 있어요. 어떤 문제에 어떤 구조를 쓸지 아는 게 핵심이에요.',
+    concept: '오늘은 <b>최신 AI 트렌드(LLM)</b>를 봐요. <b>GPT</b>(Decoder, 글 생성 특화), <b>BERT</b>(Encoder, 문맥 이해 특화), <b>T5</b>(둘 다)는 모두 Transformer 가족이에요. <b>실습 ①</b>에서 이들의 차이를 표로 정리하고, <b>실습 ②</b>에서 Hugging Face 모델 카드를 읽고 빈칸 채우기(fill-mask) 모델을 체험합니다. <b>LLM</b>(거대 언어모델)이 어떻게 방대한 텍스트를 학습해 사람처럼 답하는지 큰 그림을 잡는 날이에요.',
     quiz: [
-      { type: 'mc', q: '이미지 분류 / 시계열 예측 / 번역에 각각 어울리는 구조를 바르게 짝지은 것은?', options: ['이미지=CNN, 시계열=RNN/LSTM, 번역=Transformer', '이미지=RNN, 시계열=CNN, 번역=KNN', '전부 K-means', '전부 선형회귀'], answer: 0, explain: '데이터 특성에 맞는 구조 선택이 핵심! 이미지=CNN, 순차=RNN/LSTM, 언어=Transformer.' },
-      { type: 'ox', q: '딥러닝에서도 \'문제의 종류에 맞는 모델 구조\'를 고르는 것이 중요하다.', answer: true, explain: '맞아요! 만능 구조는 없어요. 데이터와 문제에 맞춰 골라야 해요.' }
+      { type: 'mc', q: 'GPT, BERT, T5가 공통으로 기반하는 신경망 구조는?', options: ['Transformer', 'CNN', 'K-means', '결정 트리'], answer: 0, explain: '셋 다 Transformer 기반! GPT는 디코더, BERT는 인코더 중심이에요.' },
+      { type: 'ox', q: 'GPT는 주로 텍스트 \'생성\'에, BERT는 주로 문맥 \'이해\'에 강점이 있다.', answer: true, explain: '맞아요! GPT(생성)·BERT(이해)는 각자 강점이 달라요.' }
     ]
   },
   '2026-08-25': {
@@ -1781,7 +1801,7 @@ const LESSON_LINKS = {
   '2026-07-10': [ { label: '📺 경사하강법 강의 (영상)', url: 'https://www.youtube.com/results?search_query=경사하강법+gradient+descent+강의' }, { label: '📖 경사하강법 쉽게 (검색)', url: 'https://www.google.com/search?q=경사하강법+학습률+쉬운+설명' } ],
   '2026-07-11': [ { label: '📺 그래디언트 벡터 강의 (영상)', url: 'https://www.youtube.com/results?search_query=그래디언트+벡터+gradient+강의' }, { label: '📖 그래디언트 개념 (검색)', url: 'https://www.google.com/search?q=그래디언트+벡터+최대증가방향' } ],
   '2026-07-12': [ { label: '📺 선형변환·PCA 강의 (영상)', url: 'https://www.youtube.com/results?search_query=선형변환+PCA+주성분분석+강의' }, { label: '📖 PCA 쉬운 설명 (검색)', url: 'https://www.google.com/search?q=PCA+주성분분석+차원축소+쉬운+설명' } ],
-  '2026-07-13': [ { label: '📺 머신러닝 수학 총정리 (영상)', url: 'https://www.youtube.com/results?search_query=머신러닝+수학+선형대수+미적분+총정리' }, { label: '📖 ML 수학 정리 (검색)', url: 'https://www.google.com/search?q=머신러닝+필수+수학+선형대수+미적분' } ],
+  '2026-07-13': [ { label: '📺 SVD·PCA 차원축소 강의 (영상)', url: 'https://www.youtube.com/results?search_query=SVD+PCA+차원축소+강의' }, { label: '📖 SVD와 PCA 관계 (검색)', url: 'https://www.google.com/search?q=SVD+PCA+관계+차원축소' } ],
   '2026-07-14': [ { label: '📺 머신러닝 수학 총정리 (영상)', url: 'https://www.youtube.com/results?search_query=머신러닝+수학+선형대수+미적분+총정리' }, { label: '📖 ML 수학 정리 (검색)', url: 'https://www.google.com/search?q=머신러닝+필수+수학+선형대수+미적분' } ],
   // Phase 3: 통계
   '2026-07-15': [ { label: '📺 기술통계(평균·중앙값) 강의', url: 'https://www.youtube.com/results?search_query=기술통계+평균+중앙값+최빈값+강의' }, { label: '📖 기술통계 개념 (검색)', url: 'https://www.google.com/search?q=평균+중앙값+최빈값+차이' } ],
@@ -1796,7 +1816,7 @@ const LESSON_LINKS = {
   '2026-07-24': [ { label: '📺 상관관계·상관계수 강의 (영상)', url: 'https://www.youtube.com/results?search_query=상관관계+상관계수+강의' }, { label: '📖 상관≠인과 (검색)', url: 'https://www.google.com/search?q=상관관계+인과관계+차이' } ],
   '2026-07-25': [ { label: '📺 선형회귀·최소제곱법 강의 (영상)', url: 'https://www.youtube.com/results?search_query=선형회귀+최소제곱법+R제곱+강의' }, { label: '📖 R²(결정계수) (검색)', url: 'https://www.google.com/search?q=선형회귀+R제곱+결정계수+의미' } ],
   '2026-07-26': [ { label: '📺 엔트로피·교차엔트로피 강의 (영상)', url: 'https://www.youtube.com/results?search_query=엔트로피+교차엔트로피+강의' }, { label: '📖 정보이론 기초 (검색)', url: 'https://www.google.com/search?q=엔트로피+교차엔트로피+손실함수' } ],
-  '2026-07-27': [ { label: '📺 타이타닉 EDA 강의 (영상)', url: 'https://www.youtube.com/results?search_query=타이타닉+EDA+데이터분석+강의' }, { label: '📖 EDA 방법 (검색)', url: 'https://www.google.com/search?q=탐색적+데이터분석+EDA+방법' } ],
+  '2026-07-27': [ { label: '📺 나이브 베이즈 강의 (영상)', url: 'https://www.youtube.com/results?search_query=나이브+베이즈+분류기+강의' }, { label: '📖 베이지안 추론 (검색)', url: 'https://www.google.com/search?q=베이지안+추론+사전확률+사후확률' } ],
   '2026-07-28': [ { label: '📺 타이타닉 EDA 강의 (영상)', url: 'https://www.youtube.com/results?search_query=타이타닉+EDA+데이터분석+강의' }, { label: '📖 EDA 방법 (검색)', url: 'https://www.google.com/search?q=탐색적+데이터분석+EDA+방법' } ],
   // Phase 4: 머신러닝
   '2026-07-29': [ { label: '📺 머신러닝 개요 강의 (영상)', url: 'https://www.youtube.com/results?search_query=머신러닝+지도학습+비지도학습+강의' }, { label: '📖 ML 종류 정리 (검색)', url: 'https://www.google.com/search?q=지도학습+비지도학습+강화학습+차이' } ],
@@ -1826,7 +1846,7 @@ const LESSON_LINKS = {
   '2026-08-21': [ { label: '📺 Transformer·Attention 강의 (영상)', url: 'https://www.youtube.com/results?search_query=트랜스포머+attention+self-attention+강의' }, { label: '📖 Illustrated Transformer', url: 'https://www.google.com/search?q=illustrated+transformer+한글+설명' } ],
   '2026-08-22': [ { label: '📺 NLP·Word2Vec 강의 (영상)', url: 'https://www.youtube.com/results?search_query=자연어처리+토큰화+Word2Vec+강의' }, { label: '📖 워드 임베딩 (검색)', url: 'https://www.google.com/search?q=토큰화+워드임베딩+Word2Vec+쉬운+설명' } ],
   '2026-08-23': [ { label: '📺 GAN·VAE 강의 (영상)', url: 'https://www.youtube.com/results?search_query=GAN+VAE+생성모델+강의' }, { label: '📖 Hugging Face 시작하기', url: 'https://huggingface.co/learn' } ],
-  '2026-08-24': [ { label: '📺 딥러닝 총정리 (영상)', url: 'https://www.youtube.com/results?search_query=딥러닝+CNN+RNN+Transformer+총정리' }, { label: '📖 아키텍처 비교 (검색)', url: 'https://www.google.com/search?q=CNN+RNN+Transformer+차이+비교' } ],
+  '2026-08-24': [ { label: '📺 GPT·BERT·LLM 강의 (영상)', url: 'https://www.youtube.com/results?search_query=GPT+BERT+LLM+차이+강의' }, { label: '📖 GPT vs BERT (검색)', url: 'https://www.google.com/search?q=GPT+BERT+T5+차이+Transformer' } ],
   '2026-08-25': [ { label: '📺 딥러닝 총정리 (영상)', url: 'https://www.youtube.com/results?search_query=딥러닝+CNN+RNN+Transformer+총정리' }, { label: '📖 아키텍처 비교 (검색)', url: 'https://www.google.com/search?q=CNN+RNN+Transformer+차이+비교' } ],
   // Phase 6: 복습
   '2026-08-26': [ { label: '📺 파이썬·수학 복습 (영상)', url: 'https://www.youtube.com/results?search_query=파이썬+머신러닝+수학+복습' }, { label: '📖 점프 투 파이썬 (목차)', url: 'https://wikidocs.net/book/1' } ],
